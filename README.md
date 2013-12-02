@@ -166,7 +166,9 @@ This is the same in reverse. The properties of the object are set based on the v
 
 Serializing the object and sending it to the server is up to you. (We recommend using `$.jsonCall`.) But once it gets there, you can use the `convertFields` method to clean up the data and make sure it obeys the schema:
 
+```javascript
 schemas.convertFields(schema, object)
+```
 
 Now you can save the object as you normally would.
 
