@@ -19,7 +19,8 @@ This module is still under construction; this exciting documentation is here to 
     * [reverse many-to-many](#reverse-many-to-many-joins)
     * [Complicated Relationships](#when-relationships-get-complicated)
     * [Accessing Relationship Properties in a Reverse Join](#accessing-relationship-properties-in-a-reverse-join)
-  * Subclassing
+  * [Adding New Field Types](#adding-new-field-types)
+  * Support for Subclassing
     * [Creating Schemas With Compose](#creating-schemas-with-compose)
 
 `apostrophe-schemas` adds support for simple schemas of editable properties to any object. Schema types include text, select, apostrophe areas and singletons, joins (relationships to other objects), and more. This module is used by the `apostrophe-snippets` module to implement its edit views and can also be used elsewhere.
@@ -146,12 +147,13 @@ var schema = apos.data.mymodule.schema;
 aposSchemas.populateFields(schema, $el, object)
 ```
 
-. `$el` should be a jQuery object referring to the element that contains all of the fields you output with `schemaFields`. `object` is an existing object containing existing values for some or all of the properties.
+`$el` should be a jQuery object referring to the element that contains all of the fields you output with `schemaFields`. `object` is an existing object containing existing values for some or all of the properties.
 
 And, when you're ready to save the content:
 
 ```javascript
 aposSchemas.convertFields(schema, $el, object)
+```
 
 This is the same in reverse. The properties of the object are set based on the values in the editor. Aggressive sanitization is not performed in the browser because the server must always do it anyway (never trust a browser). You may of course do your own validation after calling `convertFields` and perhaps decide the user is not done editing yet after all.
 
