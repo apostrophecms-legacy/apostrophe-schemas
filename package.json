@@ -1,0 +1,27 @@
+{
+  "name": "apostrophe-schema",
+  "version": "0.1.0",
+  "description": "Schemas for easy editing of properties in Apostrophe objects",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/punkave/apostrophe-schema.git"
+  },
+  "keywords": [
+    "apostrophe",
+    "cms",
+    "content",
+    "management",
+    "schemas",
+    "mongodb"
+  ],
+  "author": "P'unk Avenue LLC",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/punkave/apostrophe-schema/issues"
+  },
+  "homepage": "https://github.com/punkave/apostrophe-schema"
+}
