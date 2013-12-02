@@ -114,6 +114,7 @@ All of the fields will be presented with their standard markup, ready to be popu
 
 It is also possible to inject some custom markup around a field. Just output the fields "before" a certain point, then the fields "after" it:
 
+```jinja
 {{ schemaFields(fields, { before: 'shoeSize' }) }}
 <p>Here comes the shoe size kids!</p>
 {{ schemaText('shoeSize', 'Shoe Size') }}
