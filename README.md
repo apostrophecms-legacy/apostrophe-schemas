@@ -383,7 +383,7 @@ Once we introduce the `relationship` option, our templates have to change a litt
 {% endfor %}
 ```
 
-Two important changes here: *the actual story is `story.item`*, not just `story`, and `relationship fields can be accessed via `story.relationship`*. This change kicks in when you use the `relationship` option.
+Two important changes here: *the actual story is `story.item`*, not just `story`, and *relationship fields can be accessed via `story.relationship`*. This change kicks in when you use the `relationship` option.
 
 Doing it this way saves a lot of memory because we can still share book objects between stories and vice versa.
 
