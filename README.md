@@ -80,7 +80,7 @@ However, if you are implementing a subclass and need to make changes to the sche
 
 Currently:
 
-`string`, `boolean`, `integer`, `float`, `select`, `url`, `date`, `time`, `tags`, `area`, `singleton`
+`string`, `boolean`, `integer`, `float`, `select`, `url`, `date`, `time`, `slug`, `tags`, `password`, `area`, `singleton`
 
 Except for `area`, all of these types accept a `def` option which provides a default value if the field's value is not specified.
 
@@ -89,6 +89,10 @@ The `integer` and `float` types also accept `min` and `max` options and automati
 The `select` type accepts a `choices` option which should contain an array of objects with `value` and `label` properties.
 
 The `date` type pops up a jQuery UI datepicker when clicked on, and the `time` type tolerates many different ways of entering the time, like "1pm" or "1:00pm" and "13:00".
+
+The `url` field type is tolerant of mistakes like leaving off `http:`.
+
+The `password` field type stores a salted hash of the password via `apos.hashPassword` which can be checked later with the `password-hash` module. If the user enters nothing the existing password is not updated.
 
 When using the `area` and `singleton` types, you may include an `options` property which will be passed to that area or singleton exactly as if you were passing it to `aposArea` or `aposSingleton`.
 
@@ -110,7 +114,7 @@ This is really easy! Just write this in your nunjucks template:
 
 Of course you must pass your schema to Nunjucks when rendering your template.
 
-All of the fields will be presented with their standard markup, ready to be populated by `aposSchema.populateFields` in browser-side JavaScript.
+All of the fields will be presented with their standard markup, ready to be populated by `aposSchemas.populateFields` in browser-side JavaScript.
 
 It is also possible to inject some custom markup around a field. Just output the fields "before" a certain point, then the fields "after" it:
 
