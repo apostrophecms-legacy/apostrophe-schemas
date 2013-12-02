@@ -164,7 +164,7 @@ This is the same in reverse. The properties of the object are set based on the v
 
 ### Editing: Saving Objects On the Server
 
-Serializing the object and sending it to the server is up to you. But once it gets there, you can use the `sanitizeFields` method to clean up the data and make sure it obeys the schema:
+Serializing the object and sending it to the server is up to you. (We recommend using `$.jsonCall`.) But once it gets there, you can use the `convertFields` method to clean up the data and make sure it obeys the schema:
 
 schemas.convertFields(schema, object)
 
