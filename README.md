@@ -1,5 +1,9 @@
 # apostrophe-schemas
 
+## Documentation-Driven Development (DDD)
+
+This module is still under construction; this exciting documentation is here to define how it should behave. Most of this functionality already exists in the `apostrophe-snippets` module, by the way.
+
 **Table of Contents**
   * [Adding New Properties To Objects Using the Schema](#adding-new-properties-to-your-snippets-using-the-schema)
     * [What field types are available?](#what-field-types-are-available)
