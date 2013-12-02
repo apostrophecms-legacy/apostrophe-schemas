@@ -471,7 +471,8 @@ schemas.compose({
 
 This `compose` call adds two fields, then removes one of them. This makes it easy for subclasses to contribute to the object which a parent class will ultimately pass to `compose`. It often looks like this:
 
-var schemas = require('apostrophe-schemass');
+```javascript
+var schemas = require('apostrophe-schemas');
 
 // Superclass has title and age fields, also merges in any fields appended
 // to addFields by a subclass
@@ -508,6 +509,7 @@ function MySubclass(options) {
     removeFields: [ 'age' ]
   });
 }
+```
 
 #### Removing Fields
 
