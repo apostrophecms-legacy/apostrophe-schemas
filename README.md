@@ -444,6 +444,122 @@ Apostrophe instead lets us write this:
 
 *Much better.*
 
+### Adding New Field Types
+
+You can add a new field type easily.
+
+On the server side, we'll need to write three methods:
+
+* A "template" method that just renders a suitable Nunjucks template to insert this type of field in a form. Browser-side JavaScript will populate it with content later. Use the assets mixin in your module to make this code easy to write.
+* A converter for use when a form submission arrives.
+* A converter for use during CSV import of an object.
+
+The converter's job is to ensure the content is really a list of strings and then populate the object with it. We pull the list from `data` (what the user submitted) and use it to populate `object`. We also have access to the field name (`name`) and, if we need it, the entire field object (`field`), which allows us to implement custom options.
+
+Here's an example of a custom field type: a simple list of strings.
+
+```javascript
+
+// Earlier in our module's constructor...
+self._apos.mixinModuleAssets(self, 'mymodulename', __dirname, options);
+// Now self.renderer is available
+
+schemas.addFieldType({
+  name: 'list',
+  template: self.renderer('schemaList'),
+  converters: {
+    form: function(data, name, object, field) {
+      // Don't trust anything we get from the browser! Let's sanitize!
+
+      var maybe = _.isArray(data[name]) ? data[name] || [];
+
+      // Now build up a list of clean content
+      var yes = [];
+
+      _.each(maybe, function(item) {
+        if (field.max && (yes.length >= field.max)) {
+          // Limit the length of the list via a "max" property of the field
+          return;
+        }
+        // Only accept strings
+        if (typeof(item) === 'string') {
+          yes.push(item);
+        }
+      });
+      object[name] = yes;
+    },
+
+    // CSV is a lot simpler because the input is always just
+    // a string. Split on "|" to allow more than one string in the list
+    csv: function(data, name, object, field) {
+      object[name] = data[name].split('|');
+    }
+  }
+});
+```
+
+The `views/schemaList.html` template would look like this. Note that the "name" and "label" options are passed to the template. In fact, all properties of the field that are part of the schema are available to the template. Setting `data-name` correctly is crucial. Adding a CSS class based on the field name is a nice touch but not required.
+
+```jinja
+<fieldset class="apos-fieldset my-fieldset-list apos-fieldset-{{ name | css}}" data-name="{{ name }}">
+  <label>{{ label | e }}</label>
+  {# Text entry for autocompleting the next item #}
+  <input name="{{ name | e }}" data-autocomplete placeholder="Type Here" class="autocomplete" />
+  {# This markup is designed for jQuery Selective to show existing list items #}
+  <ul data-list class="my-list">
+    <li data-item>
+      <span class="label-and-remove">
+        <a href="#" class="apos-tag-remove icon-remove" data-remove></a>
+        <span data-label>Example label</span>
+      </span>
+    </li>
+  </ul>
+</fieldset>
+```
+
+Next, on the browser side, we need to supply three methods: a displayer and a converter.
+
+"displayer" is a method that populates the form field. `aposSchemas.populateFields` will invoke it.
+
+"converter" is a method that retrieves data from the form field and places it in an object. `aposSchemas.convertFields` will invoke it.
+
+Here's the browser-side code to add our "list" type:
+
+```javascript
+aposSchemas.addFieldType({
+  name: 'list',
+  displayer: function(data, name, $field, $el, field, callback) {
+    // $field is the element with right "name" attribute, which is great
+    // for classic HTML form elements. But for this type we want the
+    // div with the right "data-name" attribute. So find it in $el
+    $field = $el.find('[data-name="' + name + '"]');
+    // Use jQuery selective to power the list
+    $field.selective({
+      // pass the existing values in as label/value pairs to satisfy
+      // jQuery selective
+      data: [
+        _.map(data[name], function() {
+          return {
+            label: data[name],
+            value: data[name]
+          };
+        });
+      ],
+      // Allow the user to add new strings
+      add: true
+    });
+    // Be sure to invoke the callback
+    return callback();
+  },
+  converter: function(data, name, $field, $el, field) {
+    $field = $el.find('[data-name="' + name + '"]');
+    data[name] = $field.selective('get');
+  }
+});
+```
+
+This code can live in `site.js`, or in a `js` file that you push as an asset from your project or an npm module. Make sure your module loads *after* `apostrophe-schema`.
+
 ### Creating Schemas With Compose
 
 For many applications just creating your own array of fields is fine. But if you are creating a subclass of another module that also uses schemas, and you want to adjust the schema, you'll be a lot happier if the superclass uses the `schemas.compose()` method to build up the schema via the `addFields`, `removeFields`, `orderFields` and occasionally `alterFields` options.
