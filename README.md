@@ -7,7 +7,6 @@
     * [Schemas in Nunjucks Templates](#editing-schemas-in-nunjucks-templates)
     * [Browser-Side JavaScript](#editing-browser-side-javascript)
     * [Saving Objects On the Server](#editing-saving-objects-on-the-server)
-
   * [Joins in Schemas](#joins-in-schemas)
     * [one-to-one](#one-to-one-joins)
     * [reverse](#reverse-joins)
@@ -16,7 +15,8 @@
     * [reverse many-to-many](#reverse-many-to-many-joins)
     * [Complicated Relationships](#when-relationships-get-complicated)
     * [Accessing Relationship Properties in a Reverse Join](#accessing-relationship-properties-in-a-reverse-join)
-  * [Creating Schemas With Compose](#creating-schemas-with-compose)
+  * Subclassing
+    * [Creating Schemas With Compose](#creating-schemas-with-compose)
 
 `apostrophe-schemas` adds support for simple schemas of editable properties to any object. Schema types include text, select, apostrophe areas and singletons, joins (relationships to other objects), and more. This module is used by the `apostrophe-snippets` module to implement its edit views and can also be used elsewhere.
 
