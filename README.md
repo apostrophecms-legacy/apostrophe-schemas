@@ -3,6 +3,11 @@
 **Table of Contents**
   * [Adding New Properties To Objects Using the Schema](#adding-new-properties-to-your-snippets-using-the-schema)
     * [What field types are available?](#what-field-types-are-available)
+  * Editing
+    * [Schemas in Nunjucks Templates](#editing-schemas-in-nunjucks-templates)
+    * [Browser-Side JavaScript](#editing-browser-side-javascript)
+    * [Saving Objects On the Server](#editing-saving-objects-on-the-server)
+
   * [Joins in Schemas](#joins-in-schemas)
     * [one-to-one](#one-to-one-joins)
     * [reverse](#reverse-joins)
@@ -86,7 +91,7 @@ When using the `singleton` type, you must always specify `widgetType` to indicat
 
 Joins are also supported as described later.
 
-### Editing: Schemas in Nunjucks Templates:
+### Editing: Schemas in Nunjucks Templates
 
 This is really easy! Just write this in your nunjucks template:
 
@@ -146,7 +151,7 @@ aposSchemas.convertFields(schema, $el, object)
 
 This is the same in reverse. The properties of the object are set based on the values in the editor. Aggressive sanitization is not performed in the browser because the server must always do it anyway (never trust a browser). You may of course do your own validation after calling `convertFields` and perhaps decide the user is not done editing yet after all.
 
-### Saving Objects On the Server
+### Editing: Saving Objects On the Server
 
 Serializing the object and sending it to the server is up to you. But once it gets there, you can use the `sanitizeFields` method to clean up the data and make sure it obeys the schema:
 
