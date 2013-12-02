@@ -136,7 +136,7 @@ Note that you do not need to supply any arguments that can be inferred from the 
 You also need to push your schema from the server so that it is visible to browser-side Javascript:
 
 ```javascript
-apos.pushGlobalData({
+self._apos.pushGlobalData({
   mymodule: {
     schema: self.schema
   }
