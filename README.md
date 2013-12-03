@@ -1,8 +1,8 @@
 # apostrophe-schemas
 
-## Documentation-Driven Development (DDD)
+## Code Status
 
-This module is still under construction; this exciting documentation is here to define how it should behave. Most of this functionality already exists in the `apostrophe-snippets` module, by the way.
+This module is now in production use, powering the `apostrophe-snippets` module, and therefore `apostrophe-blog`, `apostrophe-events`, etc. Everything you see here has been tested, with the exception of the "adding new field types" section, which has been implemented but not yet tested. If you find issues with that feature (which is not critical for any existing A2 modules) we would welcome bug reports and pull requests.
 
 **Table of Contents**
   * [Adding New Properties To Objects Using the Schema](#adding-new-properties-to-your-snippets-using-the-schema)
