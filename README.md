@@ -5,6 +5,7 @@
 This module is now in production use, powering the `apostrophe-snippets` module, and therefore `apostrophe-blog`, `apostrophe-events`, etc. Everything you see here has been tested, with the exception of the "adding new field types" section, which has been implemented but not yet tested. If you find issues with that feature (which is not critical for any existing A2 modules) we would welcome bug reports and pull requests.
 
 **Table of Contents**
+  * [Accessing the Schemas Object In Your Module](#accessing-the-schemas-object-in-your-module)
   * [Adding New Properties To Objects Using the Schema](#adding-new-properties-to-your-snippets-using-the-schema)
     * [What field types are available?](#what-field-types-are-available)
   * Editing
@@ -24,6 +25,19 @@ This module is now in production use, powering the `apostrophe-snippets` module,
     * [Creating Schemas With Compose](#creating-schemas-with-compose)
 
 `apostrophe-schemas` adds support for simple schemas of editable properties to any object. Schema types include text, select, apostrophe areas and singletons, joins (relationships to other objects), and more. This module is used by the `apostrophe-snippets` module to implement its edit views and can also be used elsewhere.
+
+### Accessing the Schemas Object In Your Module
+
+In any project built with the [apostrophe-site](http://github.com/punkave/apostrophe-site) module, every module you configure in `app.js` will receive a `schemas` option, which is a ready-to-rock instance of the `apostrophe-schemas` module. You might want to add it as a property in your constructor:
+
+    self._schemas = options.schemas;
+
+**If you are not using `apostrophe-site`... well, you should be.** But a reasonable alternative is to configure `apostrophe-schemas` yourself in `app.js`:
+
+    var schemas = require('apostrophe-schemas')({ app: app, apos: apos });
+    schemas.setPages(pages); // pages module must be injected
+
+And then pass it as the `schemas` option to every module that will use it. But this is silly. Use `apostrophe-site`.
 
 ### Adding New Properties To Objects Using the Schema
 
