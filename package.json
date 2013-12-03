@@ -1,5 +1,5 @@
 {
-  "name": "apostrophe-schema",
+  "name": "apostrophe-schemas",
   "version": "0.1.0",
   "description": "Schemas for easy editing of properties in Apostrophe objects",
   "main": "index.js",
@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/punkave/apostrophe-schema.git"
+    "url": "https://github.com/punkave/apostrophe-schemas.git"
   },
   "keywords": [
     "apostrophe",
@@ -21,7 +21,13 @@
   "author": "P'unk Avenue LLC",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/punkave/apostrophe-schema/issues"
+    "url": "https://github.com/punkave/apostrophe-schemas/issues"
   },
-  "homepage": "https://github.com/punkave/apostrophe-schema"
+  "homepage": "https://github.com/punkave/apostrophe-schemas",
+  "dependencies": {
+    "async": "~0.2.9",
+    "underscore": "~1.5.2",
+    "extend": "~1.2.1",
+    "moment": "~2.4.0"
+  }
 }

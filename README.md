@@ -105,7 +105,7 @@ Joins are also supported as described later.
 This is really easy! Just write this in your nunjucks template:
 
 ```jinja
-{% include 'schemaMacros.html' %}
+{% include 'schemas:schemaMacros.html' %}
 
 <form class="my-form">
   {{ schemaFields(schema) }}
@@ -145,11 +145,13 @@ self._apos.pushGlobalData({
 
 ### Editing: Browser-Side Javascript
 
-Now you're ready to use the browser-side JavaScript to power up the editor:
+Now you're ready to use the browser-side JavaScript to power up the editor. Note that the `populateFields` method takes a callback:
 
 ```javascript
 var schema = apos.data.mymodule.schema;
-aposSchemas.populateFields(schema, $el, object)
+aposSchemas.populateFields($el, schema, object, function() {
+  // We're ready
+});
 ```
 
 `$el` should be a jQuery object referring to the element that contains all of the fields you output with `schemaFields`. `object` is an existing object containing existing values for some or all of the properties.
@@ -157,20 +159,22 @@ aposSchemas.populateFields(schema, $el, object)
 And, when you're ready to save the content:
 
 ```javascript
-aposSchemas.convertFields(schema, $el, object)
+aposSchemas.convertFields($el, schema, object)
 ```
 
 This is the same in reverse. The properties of the object are set based on the values in the editor. Aggressive sanitization is not performed in the browser because the server must always do it anyway (never trust a browser). You may of course do your own validation after calling `convertFields` and perhaps decide the user is not done editing yet after all.
 
 ### Editing: Saving Objects On the Server
 
-Serializing the object and sending it to the server is up to you. (We recommend using `$.jsonCall`.) But once it gets there, you can use the `convertFields` method to clean up the data and make sure it obeys the schema:
+Serializing the object and sending it to the server is up to you. (We recommend using `$.jsonCall`.) But once it gets there, you can use the `convertFields` method to clean up the data and make sure it obeys the schema. The incoming fields should be properties of `data`, and will be sanitized and copied to properties of `object`:
 
 ```javascript
-schemas.convertFields(schema, object)
+schemas.convertFields(schema, 'form', data, object)
 ```
 
-Now you can save the object as you normally would.
+The second argument is set to `'form'` to indicate that this data came from a form and should go through that converter.
+
+Now you can save `object` as you normally would.
 
 ### Joins in Schemas
 
@@ -203,7 +207,7 @@ You might write this:
 
 (How does this work? `apostrophe-schemas` will consult the `apostrophe-pages` module to find the manager object responsible for `mapLocation` objects, which will turn out to be the `apostrophe-map` module.)
 
-Now the user can pick a map location. And if you call `schema.join(schema, myObjectOrArrayOfObjects, callback)`, `apostrophe-schemas` will carry out the join, fetch the related object and populate the `_location` property of your object. Note that it is much more efficient to pass an array of objects if you need related objects for more than one.
+Now the user can pick a map location. And if you call `schema.join(req, schema, myObjectOrArrayOfObjects, callback)`, `apostrophe-schemas` will carry out the join, fetch the related object and populate the `_location` property of your object. Note that it is much more efficient to pass an array of objects if you need related objects for more than one.
 
 Here's an example of using the resulting ._location property in a Nunjucks template:
 
@@ -457,6 +461,18 @@ Apostrophe instead lets us write this:
 
 *Much better.*
 
+#### Specifying Joins When Calling schemas.join
+
+Sometimes you won't want to honor all of the joins that exist in your schema. Other times you may wish to fetch more than your schema's `withJoin` options specify as a default behavior.
+
+You can force `schemas.join` to honor specific joins by supplying a `withJoins` parameter:
+
+```javascript
+schemas.join(req, schema, objects, [ '_locations._events._promoters' ], callback);
+```
+
+The syntax is exactly the same as for the `withJoins` option to individual joins in the schema, discussed earlier.
+
 ### Adding New Field Types
 
 You can add a new field type easily.
@@ -511,7 +527,16 @@ schemas.addFieldType({
 });
 ```
 
-The `views/schemaList.html` template would look like this. Note that the "name" and "label" options are passed to the template. In fact, all properties of the field that are part of the schema are available to the template. Setting `data-name` correctly is crucial. Adding a CSS class based on the field name is a nice touch but not required.
+We can also supply an optional `indexer` method to allow site-wide searches to locate this object based on the value of the field:
+
+```javascript
+  indexer: function(value, field, texts) {
+    var silent = (field.silent === undefined) ? true : field.silent;
+    texts.push({ weight: field.weight || 15, text: value.join(' '), silent: silent });
+  }
+```
+
+The `views/schemaList.html` template should look like this. Note that the "name" and "label" options are passed to the template. In fact, all properties of the field that are part of the schema are available to the template. Setting `data-name` correctly is crucial. Adding a CSS class based on the field name is a nice touch but not required.
 
 ```jinja
 <fieldset class="apos-fieldset my-fieldset-list apos-fieldset-{{ name | css}}" data-name="{{ name }}">
