@@ -107,6 +107,9 @@ function ApostropheSchemas(options, callback) {
     return schema;
   };
 
+  // For custom types. For the builtin types we use macros.
+  self.templates = {};
+
   // BEGIN CONVERTERS
 
   // Converters from various formats for various types. Define them all
@@ -434,7 +437,7 @@ function ApostropheSchemas(options, callback) {
   // Render a custom field from nunjucks
   self._apos.addLocal('aposSchemaField', function(field) {
     if (!self.templates[field.type]) {
-      throw new Exception("No such field type, or you forgot to set its template property when calling schemas.addFieldType, or it is a built-in type that has its own macro and you are calling aposSchemaField on it anyway: " + field.type);
+      throw "No such field type, or you forgot to set its template property when calling schemas.addFieldType, or it is a built-in type that has its own macro and you are calling aposSchemaField on it anyway: " + field.type;
     }
     return self.templates[field.type](field);
   });

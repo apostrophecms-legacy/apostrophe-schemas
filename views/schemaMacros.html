@@ -69,6 +69,8 @@
           relationship: field.relationship,
           placeholder: field.placeholder
         }) }}
+      {% elif ((field.type == 'joinByOneReverse') or (field.type == 'joinByArrayReverse')) %}
+        {# Do nothing, these are edited on the reverse side #}
       {% else %}
         {# Invokes the appropriate renderer for a custom type #}
         {{ aposSchemaField(field) }}
