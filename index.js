@@ -107,6 +107,15 @@ function ApostropheSchemas(options, callback) {
     return schema;
   };
 
+  // refine is like compose, but it starts with an existing schema array
+  // and amends it via the same options as compose.
+  self.refine = function(schema, _options) {
+    var options = {};
+    extend(true, options, _options);
+    options.addFields = schema.concat(options.addFields || []);
+    return self.compose(options);
+  };
+
   // For custom types. For the builtin types we use macros.
   self.templates = {};
 

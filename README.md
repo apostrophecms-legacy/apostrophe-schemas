@@ -21,8 +21,9 @@ This module is now in production use, powering the `apostrophe-snippets` module,
     * [Complicated Relationships](#when-relationships-get-complicated)
     * [Accessing Relationship Properties in a Reverse Join](#accessing-relationship-properties-in-a-reverse-join)
   * [Adding New Field Types](#adding-new-field-types)
-  * Support for Subclassing
+  * Support for Subclassing and Mixins
     * [Creating Schemas With Compose](#creating-schemas-with-compose)
+    * [Refining Existing Schemas With Refine](#refining-existing-schemas-with-refine)
 
 `apostrophe-schemas` adds support for simple schemas of editable properties to any object. Schema types include text, select, apostrophe areas and singletons, joins (relationships to other objects), and more. This module is used by the `apostrophe-snippets` module to implement its edit views and can also be used elsewhere.
 
@@ -612,7 +613,7 @@ aposSchemas.addFieldType({
 
 This code can live in `site.js`, or in a `js` file that you push as an asset from your project or an npm module. Make sure your module loads *after* `apostrophe-schema`.
 
-### Creating Schemas With Compose
+### Creating Schemas With Compose and Refine
 
 For many applications just creating your own array of fields is fine. But if you are creating a subclass of another module that also uses schemas, and you want to adjust the schema, you'll be a lot happier if the superclass uses the `schemas.compose()` method to build up the schema via the `addFields`, `removeFields`, `orderFields` and occasionally `alterFields` options.
 
@@ -728,3 +729,14 @@ You can specify the same field twice in your `addFields` array. The last occurre
 #### Altering Fields: The Hard Way
 
 There is also an `alterFields` option available. This must be a function which receives the fields array as its argument and modifies it. Most of the time you will not need this option; see `removeFields`, `addFields` and `orderFields`. It is mostly useful if you want to make one small change to a field that is already rather complicated. Note you must modify the existing array of fields in place.
+
+#### Refining Existing Schemas With Refine
+
+Sometimes you'll want a modified version of an existing schema. `schemas.refine` is the simplest way to do this:
+
+var newSchema = schemas.refine(schema, {
+  addFields: ...,
+  removeFields ..., etc
+});
+
+The options are exactly the same as the options to `compose`.
