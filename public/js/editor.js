@@ -11,8 +11,19 @@ function AposSchemas() {
         return callback(null);
       }
       var field = schema[i];
+
       // Not all displayers use this
       var $field = $el.findByName(field.name);
+
+      // If this field maps to a plain HTML element set the
+      // required attribute when appropriate. See:
+      // http://stackoverflow.com/questions/18770369/how-to-set-html5-required-attribute-in-javascript
+      // for why I do it this way.
+
+      if (field.required && $field[0]) {
+        $field[0].required = true;
+      }
+
       return self.displayers[field.type](snippet, field.name, $field, $el, field, function() {
         return populateField(i + 1);
       });
@@ -23,15 +34,26 @@ function AposSchemas() {
   // Gather data from form elements and push it into properties of the data object,
   // as specified by the schema provided. The inverse of self.populateSomeFields
   self.convertFields = function($el, schema, data, callback) {
+    var failing;
     _.each(schema, function(field) {
       // This won't be enough for every type of field, so we pass $el too
       var $field = $el.findByName(field.name);
       if (!$field.length) {
         $field = $el.findByName(field.legacy);
       }
-      self.converters[field.type](data, field.name, $field, $el, field);
+      var result = self.converters[field.type](data, field.name, $field, $el, field);
+      var $fieldset = $el.find('[data-name="' + field.name + '"]');
+      if (result) {
+        if (!failing) {
+          failing = field;
+          $fieldset.find('input,select,textarea').first().focus();
+        }
+        $fieldset.addClass('apos-error');
+      } else {
+        $fieldset.removeClass('apos-error');
+      }
     });
-    return callback(null);
+    return callback(failing);
   };
 
   self.enableSingleton = function($el, name, area, type, optionsArg, callback) {
@@ -139,15 +161,24 @@ function AposSchemas() {
     // Convert the tough cases
     area: function(data, name, $field, $el, field) {
       data[name] = self.getAreaJSON($el, name);
+      if (field.required && !data[name].items.length) {
+        return 'required';
+      }
     },
     singleton: function(data, name, $field, $el, field) {
       data[name] = self.getSingletonJSON($el, name);
+      if (field.required && !data[name].items.length) {
+        return 'required';
+      }
     },
     joinByOne: function(data, name, $field, $el, field) {
       // Fix $field since we can't use the regular name attribute here
       $field = $el.find('[data-name="' + name + '"]');
       // The server will do the work of moving it to the idField as needed
       data[name] = $field.selective('get')[0];
+      if (field.required && !data[name]) {
+        return 'required';
+      }
     },
     joinByOneReverse: function(data, name, $field, $el, field) {
       // Not edited on this side of the relation
@@ -158,6 +189,9 @@ function AposSchemas() {
       // The server will do the work of processing it all into
       // the relationshipsField and idsField separately for us if needed
       data[name] = $field.selective('get');
+      if (field.required && !data[name].length) {
+        return 'required';
+      }
     },
     joinByArrayReverse: function(data, name, $field, $el, field) {
       // Not edited on this side of the relation
@@ -168,36 +202,70 @@ function AposSchemas() {
     // is a simple form element
     string: function(data, name, $field, $el, field) {
       data[name] = $field.val();
+      if (field.required && !data[name].length) {
+        return 'required';
+      }
     },
     password: function(data, name, $field, $el, field) {
       data[name] = $field.val();
+      if (field.required && !data[name].length) {
+        return 'required';
+      }
     },
     slug: function(data, name, $field, $el, field) {
       data[name] = $field.val();
+      if (field.required && !data[name].length) {
+        return 'required';
+      }
     },
     tags: function(data, name, $field, $el, field) {
       data[name] = $el.find('[data-name="' + name + '"]').selective('get');
+      if (field.required && !data[name].length) {
+        return 'required';
+      }
     },
     boolean: function(data, name, $field, $el, field) {
       data[name] = $field.val();
+      // Seems odd but sometimes used to mandate an "I agree" box
+      if (field.required && !data[name]) {
+        return 'required';
+      }
     },
     select: function(data, name, $field, $el, field) {
       data[name] = $field.val();
+      if (field.required && !data[name].length) {
+        return 'required';
+      }
     },
     integer: function(data, name, $field, $el, field) {
       data[name] = $field.val();
+      if (field.required && !data[name].length) {
+        return 'required';
+      }
     },
     float: function(data, name, $field, $el, field) {
       data[name] = $field.val();
+      if (field.required && !data[name].length) {
+        return 'required';
+      }
     },
     url: function(data, name, $field, $el, field) {
       data[name] = $field.val();
+      if (field.required && !data[name].length) {
+        return 'required';
+      }
     },
     date: function(data, name, $field, $el, field) {
       data[name] = $field.val();
+      if (field.required && !data[name].length) {
+        return 'required';
+      }
     },
     time: function(data, name, $field, $el, field) {
       data[name] = $field.val();
+      if (field.required && !data[name].length) {
+        return 'required';
+      }
     },
   };
 

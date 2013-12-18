@@ -420,8 +420,12 @@ function ApostropheSchemas(options, callback) {
       if (!join.name.match(/^_/)) {
         console.error('WARNING: joins should always be given names beginning with an underscore (_). Otherwise you will waste space in your database storing the results');
       }
+      var manager = self._pages.getManager(join.withType);
+      if (!manager) {
+        return callback('I cannot find the instance type ' + join.withType + ', maybe you said "map" where you should have said "mapLocation"?');
+      }
       var options = {
-        get: self._pages.getManager(join.withType).get,
+        get: manager.get,
         getOptions: {
           withJoins: withJoinsNext[join.name] || false,
           permalink: true
