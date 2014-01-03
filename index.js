@@ -140,7 +140,7 @@ function ApostropheSchemas(options, callback) {
     },
     tags: function(data, name, snippet, field) {
       var tags;
-      tags = self._apos.sanitizeString(data.tags);
+      tags = self._apos.sanitizeString(data[name]);
       tags = self._apos.tagsToArray(tags);
       snippet[name] = tags;
     },
@@ -258,7 +258,7 @@ function ApostropheSchemas(options, callback) {
   };
 
   self.converters.form.tags = function(data, name, snippet, field) {
-    snippet[name] = self._apos.sanitizeTags(data.tags);
+    snippet[name] = self._apos.sanitizeTags(data[name]);
   };
 
   // END CONVERTERS
@@ -424,8 +424,36 @@ function ApostropheSchemas(options, callback) {
       if (!manager) {
         return callback('I cannot find the instance type ' + join.withType + ', maybe you said "map" where you should have said "mapLocation"?');
       }
+
+      var getter;
+      if (manager._instance) {
+        // Snippet type manager, has instance and index types, figure out
+        // which one we are looking for
+        if (manager._instance === join.withType) {
+          getter = manager.get;
+        } else {
+          getter = manager.getIndexes;
+        }
+      } else {
+        // Simple manager for a page type. If it has a getter, use it,
+        // otherwise supply one
+        getter = manager.get || function(req, _criteria, filters, callback) {
+          var criteria = {
+            $and: [
+              {
+                type: join.withType
+              },
+              _criteria
+            ]
+          };
+          return apos.get(req, criteria, filters, callback);
+        };
+      }
+
       var options = {
-        get: manager.get,
+        // Support joining with both instance and index types. If the manager's
+        // instance type matches, use .get, otherwise use .getIndexes
+        get: getter,
         getOptions: {
           withJoins: withJoinsNext[join.name] || false,
           permalink: true

@@ -24,6 +24,8 @@ function AposSchemas() {
         $field[0].required = true;
       }
 
+      // This is a hack to implement async.eachSeries. TODO: think about putting
+      // the async module in the browser
       return self.displayers[field.type](snippet, field.name, $field, $el, field, function() {
         return populateField(i + 1);
       });
@@ -340,7 +342,14 @@ function AposSchemas() {
         // Let jQuery selective call back for the details
         selectiveData.push(id);
       }
-      $field.selective({ limit: 1, data: selectiveData, source: aposPages.getManager(field.withType)._action + '/autocomplete' });
+      // For now this is still correct on the browser side, getManager
+      // always returns undefined for an index type
+      var manager = aposPages.getManager(field.withType);
+      var autocomplete = '/apos-pages/autocomplete';
+      if (manager) {
+        autocomplete = manager._action + '/autocomplete';
+      }
+      $field.selective({ limit: 1, data: selectiveData, source: autocomplete });
       return callback();
     },
     joinByOneReverse: function(data, name, $field, $el, field, callback) {
@@ -373,7 +382,14 @@ function AposSchemas() {
         }
         selectiveData.push(datum);
       });
-      $field.selective({ preventDuplicates: true, sortable: field.sortable, extras: !!field.relationship, data: selectiveData, source: aposPages.getManager(field.withType)._action + '/autocomplete' });
+      // For now this is still correct on the browser side, getManager
+      // always returns undefined for an index type
+      var manager = aposPages.getManager(field.withType);
+      var autocomplete = '/apos-pages/autocomplete?type=' + field.withType;
+      if (manager) {
+        autocomplete = manager._action + '/autocomplete';
+      }
+      $field.selective({ preventDuplicates: true, sortable: field.sortable, extras: !!field.relationship, data: selectiveData, source: autocomplete });
       return callback();
     },
     joinByArrayReverse: function(data, name, $field, $el, field, callback) {
