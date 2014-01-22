@@ -8,6 +8,7 @@ This module is now in production use, powering the `apostrophe-snippets` module,
   * [Accessing the Schemas Object In Your Module](#accessing-the-schemas-object-in-your-module)
   * [Adding New Properties To Objects Using the Schema](#adding-new-properties-to-your-snippets-using-the-schema)
     * [What field types are available?](#what-field-types-are-available)
+    * [Required Fields](#required-fields)
   * Editing
     * [Schemas in Nunjucks Templates](#editing-schemas-in-nunjucks-templates)
     * [Browser-Side JavaScript](#editing-browser-side-javascript)
@@ -114,6 +115,14 @@ When using the `area` and `singleton` types, you may include an `options` proper
 When using the `singleton` type, you must always specify `widgetType` to indicate what type of widget should appear.
 
 Joins are also supported as described later.
+
+#### Required Fields
+
+You can make any field mandatory by giving it the `required: true` attribute. Currently this is only implemented in browser-side JavaScript, so your server-side code should be prepared not to crash if a property is unexpectedly empty.
+
+If the user attempts to save without completing a required field, the `apos-error` class will be set on the `fieldset` element for that field, and `schemas.convertFields` will pass an error to its callback. If `schemas.convertFields` passes an error, your code should not attempt to save the object or close the dialog in question, but rather let the user continue to edit until the callback is invoked with no error.
+
+The field in question must not be empty.
 
 #### Preventing Autocomplete
 
@@ -730,15 +739,23 @@ orderFields: [ 'year', 'specialness' ]
 
 Any fields you do not specify will appear in the original order, after the last field you do specify (use `removeFields` if you want a field to go away).
 
+#### Requiring Many Fields
+
+Although `required: true` works well, if you are subclassing and you wish to require a number of previously optional fields, the `requiredFields` option is more convenient. This is especially handy when working with `apostrophe-moderator`:
+
+```javascript
+requireFields: [ 'title', 'startDate', 'body' ]
+```
+
 #### Altering Fields: The Easy Way
 
 You can specify the same field twice in your `addFields` array. The last occurrence wins.
 
 #### Altering Fields: The Hard Way
 
-There is also an `alterFields` option available. This must be a function which receives the fields array as its argument and modifies it. Most of the time you will not need this option; see `removeFields`, `addFields` and `orderFields`. It is mostly useful if you want to make one small change to a field that is already rather complicated. Note you must modify the existing array of fields in place.
+There is also an `alterFields` option available. This must be a function which receives the schema (an array of fields) as its argument and modifies it. Most of the time you will not need this option; see `removeFields`, `addFields`, `orderFields` and `requireFields`. It is mostly useful if you want to make one small change to a field that is already rather complicated. Note you must modify the existing array of fields "in place."
 
-#### Refining Existing Schemas With Refine
+#### Refining Existing Schemas With `refine`
 
 Sometimes you'll want a modified version of an existing schema. `schemas.refine` is the simplest way to do this:
 
@@ -747,4 +764,5 @@ var newSchema = schemas.refine(schema, {
   removeFields ..., etc
 });
 
-The options are exactly the same as the options to `compose`.
+The options are exactly the same as the options to `compose`. The returned array is a copy. No modifications are made to the original schema array.
+
