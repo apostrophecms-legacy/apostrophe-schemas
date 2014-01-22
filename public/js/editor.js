@@ -163,13 +163,13 @@ function AposSchemas() {
     // Convert the tough cases
     area: function(data, name, $field, $el, field) {
       data[name] = self.getAreaJSON($el, name);
-      if (field.required && !data[name].items.length) {
+      if (field.required && !(data[name].items && data[name].items.length)) {
         return 'required';
       }
     },
     singleton: function(data, name, $field, $el, field) {
       data[name] = self.getSingletonJSON($el, name);
-      if (field.required && !data[name].items.length) {
+      if (field.required && !(data[name].items && data[name].items.length)) {
         return 'required';
       }
     },
