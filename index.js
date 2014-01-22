@@ -100,6 +100,17 @@ function ApostropheSchemas(options, callback) {
       });
     }
 
+    if (options.requireFields) {
+      _.each(options.requireFields, function(name) {
+        var field = _.find(schema, function(field) {
+          return field.name === name;
+        });
+        if (field) {
+          field.required = true;
+        }
+      });
+    }
+
     if (options.alterFields) {
       options.alterFields(schema);
     }
