@@ -27,6 +27,9 @@ function AposSchemas() {
       // This is a hack to implement async.eachSeries. TODO: think about putting
       // the async module in the browser
       return self.displayers[field.type](snippet, field.name, $field, $el, field, function() {
+        if (field.autocomplete === false) {
+          $field.attr('autocomplete', 'off');
+        }
         return populateField(i + 1);
       });
     }

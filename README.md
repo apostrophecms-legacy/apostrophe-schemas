@@ -115,6 +115,14 @@ When using the `singleton` type, you must always specify `widgetType` to indicat
 
 Joins are also supported as described later.
 
+#### Preventing Autocomplete
+
+For most field types, you may specify:
+
+    autocomplete: false
+
+To request that the browser not try to autocomplete the field's value for the user. The only fields that do not support this are those that are not implemented by a traditional HTML form field, and in all probability browsers won't autocomplete these anyway.
+
 ### Editing: Schemas in Nunjucks Templates
 
 This is really easy! Just write this in your nunjucks template:
