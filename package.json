@@ -1,6 +1,6 @@
 {
   "name": "apostrophe-schemas",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Schemas for easy editing of properties in Apostrophe objects",
   "main": "index.js",
   "scripts": {
