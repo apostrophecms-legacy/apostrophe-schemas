@@ -253,6 +253,8 @@ The id of the map location actually "lives" in the `location_id` property of eac
 
 *Always give your joins a name starting with an underscore.* This warns Apostrophe not to store this information in the database permanently where it will just take up space, then get re-joined every time anyway.
 
+Currently after the user has selected one item they see a message reading "Limit Reached!" We realize this may not be the best way of indicating that a selection has already been made. So you may pass a `limitText` option with an alternative message to be displayed at this point.
+
 ##### Reverse Joins
 
 You can also join back in the other direction:

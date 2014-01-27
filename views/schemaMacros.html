@@ -67,7 +67,8 @@
         {# edited on the other side #}
         {{ formSelective(field.name, field.label, {
           relationship: field.relationship,
-          placeholder: field.placeholder
+          placeholder: field.placeholder,
+          limitText: field.limitText
         }) }}
       {% elif ((field.type == 'joinByOneReverse') or (field.type == 'joinByArrayReverse')) %}
         {# Do nothing, these are edited on the reverse side #}
