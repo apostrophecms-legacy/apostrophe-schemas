@@ -420,6 +420,22 @@ function AposSchemas() {
     self.displayers[type.name] = type.displayer;
     self.converters[type.name] = type.converter;
   };
+
+  // A convenience allowing you to scroll to the first error after
+  // convertFields reports an error. Not called automatically.
+  self.scrollToError = function($el) {
+    var $element = $el.find('.apos-error');
+    if (!$element.length) {
+      return;
+    }
+    var offset = $element.offset();
+    var scrollTop = offset.top - 100;
+    $('html, body').scrollTop(scrollTop);
+    var $input = $element.find('input');
+    if ($input.length) {
+      $input.focus();
+    }
+  };
 }
 
 // Instantiate the singleton

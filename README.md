@@ -122,7 +122,11 @@ You can make any field mandatory by giving it the `required: true` attribute. Cu
 
 If the user attempts to save without completing a required field, the `apos-error` class will be set on the `fieldset` element for that field, and `schemas.convertFields` will pass an error to its callback. If `schemas.convertFields` passes an error, your code should not attempt to save the object or close the dialog in question, but rather let the user continue to edit until the callback is invoked with no error.
 
-The field in question must not be empty.
+If `schemas.convertFields` does pass an error, you may invoke:
+
+`aposSchemas.scrollToError($el)`
+
+To ensure that the first error in the form is visible. Errors are indicated by the presence of the `apos-error` class on the fieldset for a particular element, which you may apply yourself if doing custom validation independent of `convertFields`.
 
 #### Preventing Autocomplete
 
