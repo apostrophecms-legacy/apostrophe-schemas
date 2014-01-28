@@ -116,7 +116,9 @@ When using the `singleton` type, you must always specify `widgetType` to indicat
 
 Joins are also supported as described later.
 
-#### Required Fields
+#### Validation
+
+For the most part, we favor sanitization over validation. It's better to figure out what the user meant on the server side than to give them a hard time. But sometimes validation is unavoidable.
 
 You can make any field mandatory by giving it the `required: true` attribute. Currently this is only implemented in browser-side JavaScript, so your server-side code should be prepared not to crash if a property is unexpectedly empty.
 
@@ -126,7 +128,13 @@ If `schemas.convertFields` does pass an error, you may invoke:
 
 `aposSchemas.scrollToError($el)`
 
-To ensure that the first error in the form is visible. Errors are indicated by the presence of the `apos-error` class on the fieldset for a particular element, which you may apply yourself if doing custom validation independent of `convertFields`.
+To ensure that the first error in the form is visible.
+
+If you are performing your own custom validation, you can call:
+
+`aposSchemas.addError($el, 'body')`
+
+To indicate that the field named `body` has an error, in the same style that is applied to errors detected via the schema.
 
 #### Preventing Autocomplete
 

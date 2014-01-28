@@ -39,6 +39,7 @@ function AposSchemas() {
   // Gather data from form elements and push it into properties of the data object,
   // as specified by the schema provided. The inverse of self.populateSomeFields
   self.convertFields = function($el, schema, data, callback) {
+    $el.find('[data-name]').removeClass('apos-error');
     var failing;
     _.each(schema, function(field) {
       // This won't be enough for every type of field, so we pass $el too
@@ -47,15 +48,11 @@ function AposSchemas() {
         $field = $el.findByName(field.legacy);
       }
       var result = self.converters[field.type](data, field.name, $field, $el, field);
-      var $fieldset = $el.find('[data-name="' + field.name + '"]');
       if (result) {
-        if (!failing) {
-          failing = field;
-          $fieldset.find('input,select,textarea').first().focus();
-        }
-        $fieldset.addClass('apos-error');
-      } else {
-        $fieldset.removeClass('apos-error');
+        apos.log(result);
+        apos.log('addError');
+        self.addError($el, field.name);
+        failing = field;
       }
     });
     return callback(failing);
@@ -421,8 +418,18 @@ function AposSchemas() {
     self.converters[type.name] = type.converter;
   };
 
-  // A convenience allowing you to scroll to the first error after
-  // convertFields reports an error. Not called automatically.
+  // A convenience method for calling attention to errors in fields in your own
+  // independent validation code.
+
+  self.addError = function($el, name) {
+    $el.find('[data-name="' + name + '"]').addClass('apos-error');
+  };
+
+  // A convenience allowing you to scroll to the first error present,
+  // if any. Not called automatically. You can call this when
+  // convertFields passes an error or when your own validation code
+  // has invoked addError().
+
   self.scrollToError = function($el) {
     var $element = $el.find('.apos-error');
     if (!$element.length) {
@@ -431,10 +438,7 @@ function AposSchemas() {
     var offset = $element.offset();
     var scrollTop = offset.top - 100;
     $('html, body').scrollTop(scrollTop);
-    var $input = $element.find('input');
-    if ($input.length) {
-      $input.focus();
-    }
+    $element.find('input,select,textarea').first().focus();
   };
 }
 
