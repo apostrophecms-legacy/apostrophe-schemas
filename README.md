@@ -28,6 +28,10 @@ This module is now in production use, powering the `apostrophe-snippets` module,
 
 `apostrophe-schemas` adds support for simple schemas of editable properties to any object. Schema types include text, select, apostrophe areas and singletons, joins (relationships to other objects), and more. This module is used by the `apostrophe-snippets` module to implement its edit views and can also be used elsewhere.
 
+### Code Stability
+
+0.4.x releases receive bug fixes only. For active development, follow 0.5.x releases and/or the master branch in github.
+
 ### Accessing the Schemas Object In Your Module
 
 In any project built with the [apostrophe-site](http://github.com/punkave/apostrophe-site) module, every module you configure in `app.js` will receive a `schemas` option, which is a ready-to-rock instance of the `apostrophe-schemas` module. You might want to add it as a property in your constructor:
