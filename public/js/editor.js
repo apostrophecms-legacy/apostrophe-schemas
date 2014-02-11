@@ -166,13 +166,13 @@ function AposSchemas() {
       // TODO: this is very lazy and doesn't bother to look for things
       // like widgets with nothing in them. We should think seriously about
       // server side validation at this point.
-      if (field.required && (data[name] === '[]')) {
+      if (field.required && ((data[name] === '[]') || (data[name] === '[{"type":"richText","content":""}]'))) {
         return 'required';
       }
     },
     singleton: function(data, name, $field, $el, field) {
       data[name] = self.getSingletonJSON($el, name);
-      if (field.required && (data[name] === '[]')) {
+      if (field.required && ((data[name] === '[]') || (data[name] === '[{"type":"richText","content":""}]'))) {
         return 'required';
       }
     },
