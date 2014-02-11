@@ -163,13 +163,16 @@ function AposSchemas() {
     // Convert the tough cases
     area: function(data, name, $field, $el, field) {
       data[name] = self.getAreaJSON($el, name);
-      if (field.required && !(data[name].items && data[name].items.length)) {
+      // TODO: this is very lazy and doesn't bother to look for things
+      // like widgets with nothing in them. We should think seriously about
+      // server side validation at this point.
+      if (field.required && (data[name] === '[]')) {
         return 'required';
       }
     },
     singleton: function(data, name, $field, $el, field) {
       data[name] = self.getSingletonJSON($el, name);
-      if (field.required && !(data[name].items && data[name].items.length)) {
+      if (field.required && (data[name] === '[]')) {
         return 'required';
       }
     },
