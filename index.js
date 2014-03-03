@@ -138,10 +138,7 @@ function ApostropheSchemas(options, callback) {
   self.converters = {};
   self.converters.csv = {
     area: function(data, name, snippet, field) {
-      if (!snippet.areas) {
-        snippet.areas = {};
-      }
-      snippet.areas[name] = self._apos.textToArea(data[name]);
+      snippet[name] = self._apos.textToArea(data[name]);
     },
     string: function(data, name, snippet, field) {
       snippet[name] = self._apos.sanitizeString(data[name], field.def);
@@ -199,10 +196,7 @@ function ApostropheSchemas(options, callback) {
       // Always recover graciously and import something reasonable, like an empty area
     }
     self._apos.sanitizeItems(content);
-    if (!snippet.areas) {
-      snippet.areas = {};
-    }
-    snippet.areas[name] = { items: content };
+    snippet[name] = { items: content, type: 'area' };
   };
 
   self.converters.form.joinByOne = function(data, name, snippet, field) {
