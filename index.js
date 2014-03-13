@@ -488,7 +488,6 @@ function ApostropheSchemas(options, callback) {
     return self.templates[field.type](field);
   });
 
-  self.serveAssets();
   if (callback) {
     return callback(null);
   }
