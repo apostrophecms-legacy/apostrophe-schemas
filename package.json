@@ -26,7 +26,7 @@
   "homepage": "https://github.com/punkave/apostrophe-schemas",
   "dependencies": {
     "async": "~0.2.9",
-    "underscore": "~1.5.2",
+    "lodash": "2.4.x",
     "extend": "~1.2.1",
     "moment": "~2.4.0"
   }
