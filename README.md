@@ -21,6 +21,7 @@ This module is now in production use, powering the `apostrophe-snippets` module,
     * [reverse many-to-many](#reverse-many-to-many-joins)
     * [Complicated Relationships](#when-relationships-get-complicated)
     * [Accessing Relationship Properties in a Reverse Join](#accessing-relationship-properties-in-a-reverse-join)
+  * [Overriding Templates For Individual Fields](#overriding-templates-for-individual-fields)
   * [Adding New Field Types](#adding-new-field-types)
   * Support for Subclassing and Mixins
     * [Creating Schemas With Compose](#creating-schemas-with-compose)
@@ -519,13 +520,43 @@ schemas.join(req, schema, objects, [ '_locations._events._promoters' ], callback
 
 The syntax is exactly the same as for the `withJoins` option to individual joins in the schema, discussed earlier.
 
+### Overriding Templates For Individual Fields
+
+You can override templates for individual fields without resorting to writing your own `new.html` and `edit.html` templates from scratch.
+
+Here's the `string.html` template that renders all fields with the `string` type by default:
+
+```html
+{% include "schemaMacros.html" %}
+{% if textarea %}
+  {{ formTextarea(name, label) }}
+{% else %}
+  {{ formText(name, label) }}
+{% endif %}
+```
+
+You can override these for your project by creating new templates with the same names in the `lib/modules/apostrophe-schemas/views` folder. This lets you change the appearance for every field of a particular type. You should only override what you really wish to change.
+
+In addition, you can specify an alternate template name for an individual field in your schema:
+
+{
+  type: 'integer',
+  name: 'shoeSize',
+  label: 'Shoe Size',
+  template: 'shoeSize'
+}
+
+This will cause the `shoeSize.html` template to be rendered instead of the `integer.html` template.
+
+You can also pass a `render` function, which receives the field object as its only parameter. Usually you'll find it much more convenient to just use a string and put your templates in `lib/modules/apostrophe-schemas/views`.
+
 ### Adding New Field Types
 
 You can add a new field type easily.
 
 On the server side, we'll need to write three methods:
 
-* A "template" method that just renders a suitable Nunjucks template to insert this type of field in a form. Browser-side JavaScript will populate it with content later. Use the assets mixin in your module to make this code easy to write.
+* A "render" method that just renders a suitable Nunjucks template to insert this type of field in a form. Browser-side JavaScript will populate it with content later. Use the assets mixin in your module to make this code easy to write.
 * A converter for use when a form submission arrives.
 * A converter for use during CSV import of an object.
 
@@ -541,7 +572,7 @@ self._apos.mixinModuleAssets(self, 'mymodulename', __dirname, options);
 
 schemas.addFieldType({
   name: 'list',
-  template: self.renderer('schemaList'),
+  render: self.renderer('schemaList'),
   converters: {
     form: function(data, name, object, field) {
       // Don't trust anything we get from the browser! Let's sanitize!
@@ -601,7 +632,7 @@ The `views/schemaList.html` template should look like this. Note that the "name"
 </fieldset>
 ```
 
-Next, on the browser side, we need to supply three methods: a displayer and a converter.
+Next, on the browser side, we need to supply two methods: a displayer and a converter.
 
 "displayer" is a method that populates the form field. `aposSchemas.populateFields` will invoke it.
 

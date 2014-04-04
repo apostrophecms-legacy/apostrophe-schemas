@@ -115,6 +115,18 @@ function ApostropheSchemas(options, callback) {
       options.alterFields(schema);
     }
 
+    _.each(schema, function(field) {
+      if (field.template) {
+        if (typeof(field.template) === 'string') {
+          field.render = self.renderer(field.template);
+          delete field.template;
+        } else {
+          field.render = field.template;
+          delete field.template;
+        }
+      }
+    });
+
     return schema;
   };
 
@@ -128,7 +140,7 @@ function ApostropheSchemas(options, callback) {
   };
 
   // For custom types. For the builtin types we use macros.
-  self.templates = {};
+  self.renders = {};
 
   // BEGIN CONVERTERS
 
@@ -474,7 +486,9 @@ function ApostropheSchemas(options, callback) {
   // should be a function that renders a template, not a template filename.
 
   self.addFieldType = function(type) {
-    self.templates[type.name] = type.template;
+    // template is accepted for bc but it was always a function, so
+    // render is a much better name
+    self.renders[type.name] = type.render || type.template;
     self.converters.csv[type.name] = type.converters.csv;
     self.converters.form[type.name] = type.converters.form;
     self.indexers[type.name] = type.indexer;
@@ -482,10 +496,14 @@ function ApostropheSchemas(options, callback) {
 
   // Render a custom field from nunjucks
   self._apos.addLocal('aposSchemaField', function(field) {
-    if (!self.templates[field.type]) {
-      throw "No such field type, or you forgot to set its template property when calling schemas.addFieldType, or it is a built-in type that has its own macro and you are calling aposSchemaField on it anyway: " + field.type;
+    // Alow custom renderers for types and for individual fields
+    var render = field.render || self.renders[field.type];
+    if (!render) {
+      // Look for a standard render template in the views folder
+      // of this module
+      return self.renderer(field.type)(field);
     }
-    return self.templates[field.type](field);
+    return render(field);
   });
 
   if (callback) {
