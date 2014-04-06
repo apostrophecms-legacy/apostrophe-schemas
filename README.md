@@ -8,7 +8,8 @@ This module is now in production use, powering the `apostrophe-snippets` module,
   * [Accessing the Schemas Object In Your Module](#accessing-the-schemas-object-in-your-module)
   * [Adding New Properties To Objects Using the Schema](#adding-new-properties-to-your-snippets-using-the-schema)
     * [What field types are available?](#what-field-types-are-available)
-    * [Required Fields](#required-fields)
+    * [Validation](#validation)
+    * [Grouping fields into tabs](#grouping-fields-into-tabs)
   * Editing
     * [Schemas in Nunjucks Templates](#editing-schemas-in-nunjucks-templates)
     * [Browser-Side JavaScript](#editing-browser-side-javascript)
@@ -136,6 +137,41 @@ If you are performing your own custom validation, you can call:
 `aposSchemas.addError($el, 'body')`
 
 To indicate that the field named `body` has an error, in the same style that is applied to errors detected via the schema.
+
+#### Grouping fields into tabs
+
+One lonnnnng scrolling list of fields is usually not user-friendly.
+
+You may group fields together into tabs instead using the `groupFields` option. Here's how we do it in the `apostrophe-blog` module:
+
+```javascript
+  options.groupFields = options.groupFields ||
+    // We don't list the title field so it stays on top
+    [
+      {
+        name: 'content',
+        label: 'Content',
+        icon: 'content',
+        fields: [
+          'thumbnail', 'body'
+        ]
+      },
+      {
+        name: 'details',
+        label: 'Details',
+        icon: 'metadata',
+        fields: [
+          'slug', 'published', 'publicationDate', 'publicationTime', 'tags'
+        ]
+      }
+    ];
+```
+
+Each group has a name, a label, an icon (passed as a CSS class on the tab's icon element), and an array of field names.
+
+In `app.js`, you can simply pass `groupFields` like any other option when configuring a module. *The last call to `groupFields` wins, overriding any previous attempts to group the fields, so be sure to list all of them* except for fields you want to stay visible at all times above the tabs.
+
+**Be aware that group names must be distinct from field names.** Apostrophe will stop the music and tell you if they are not.
 
 #### Preventing Autocomplete
 

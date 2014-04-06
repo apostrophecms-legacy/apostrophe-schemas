@@ -115,6 +115,67 @@ function ApostropheSchemas(options, callback) {
       options.alterFields(schema);
     }
 
+    // Convenience option for grouping fields
+    // together (visually represented as tabs). Any
+    // fields that are not grouped go to the top and
+    // appear above the tabs
+    if (options.groupFields) {
+      // Drop any previous groups, we're overriding them
+      schema = _.filter(schema, function(field) {
+        return (field.type !== 'group');
+      });
+
+      // Check for groups and fields with the same name, which is
+      // forbidden because groups are internally represented as fields
+      var nameMap = {};
+      _.each(schema, function(field) {
+        nameMap[field.name] = true;
+      });
+      _.each(options.groupFields, function(group) {
+        if (_.has(nameMap, group.name)) {
+          throw new Error('The group ' + group.name + ' has the same name as a field. Group names must be distinct from field names.');
+        }
+      });
+
+      var ungrouped = [];
+      var grouped = [];
+      _.each(options.groupFields, function(group) {
+        _.each(group.fields || [], function(name) {
+          var field = _.find(schema, function(field) {
+            return (field.name === name);
+          });
+          if (field) {
+            field.group = group.name;
+          } else {
+            throw new Error('Nonexistent field ' + field + ' referenced by groups option in schemas.compose');
+          }
+        });
+      });
+
+      var newSchema = _.map(options.groupFields, function(group) {
+        return {
+          type: 'group',
+          name: group.name,
+          label: group.label,
+          icon: group.label
+        };
+      });
+
+      ungrouped = _.filter(schema, function(field) {
+        return !field.group;
+      });
+
+      newSchema = newSchema.concat(ungrouped);
+
+      _.each(options.groupFields, function(group) {
+        newSchema = newSchema.concat(_.filter(schema, function(field) {
+          return (field.group === group.name);
+        }));
+      });
+
+      schema = newSchema;
+    }
+
     _.each(schema, function(field) {
       if (field.template) {
         if (typeof(field.template) === 'string') {

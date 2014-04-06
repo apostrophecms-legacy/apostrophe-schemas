@@ -1,6 +1,24 @@
 {% include "formMacros.html" %}
 
+{# Called for you by schemaFields when a group is encountered. #}
+{% macro schemaOpenGroup(fields, group, active) %}
+  <div class="apos-modal-tab {% if active %}apos-active{% endif %}" data-tab-id="{{ group }}">
+    <div class="apos-modal-tab-content">
+{% endmacro %}
+
+{# Called for you by schemaFields when a group ends. #}
+{% macro schemaCloseGroup() %}
+    </div>
+  </div>
+{% endmacro %}
+
 {# Output all the fields in a schema. Second argument is optional, contains options. #}
+
+{# NOTE: all of the options below may have surprising results if used #}
+{# in a schema with groups (aka tabs). If you are using tabs we #}
+{# suggest you specify a template name for any custom fields rather #}
+{# than attempting to template them inline with multiple calls to #}
+{# schemaFields. #}
 
 {# If "from" is set, start with that field. If "after" is set, start after it. #}
 {# If "to" is set, end with that field. If "before" is set, end just before it. #}
@@ -16,6 +34,8 @@
 {# Any field types not known to this macro are skipped, without error. #}
 
 {% macro schemaFields(fields, options = { from: false, to: false, except: [], only: false }) %}
+  {% set groups = aposFilter(fields, 'type', 'group') %}
+  {% set firstGroupReached = false %}
   {% set fromFound = false %}
   {% set toFound = false %}
   {% for field in fields %}
@@ -30,6 +50,23 @@
     {% set allowed = (not options.only) or aposContains(options.only, field.name) %}
 
     {% if (found and notExcepted and allowed) %}
+      {% if field.group and (field.group != lastGroup) %}
+        {% if lastGroup %}
+          {{ schemaCloseGroup() }}
+          {% set activeGroup = false %}
+        {% else %}
+          {% set activeGroup = true %}
+          {# First grouped control encountered, open the tabs div #}
+          <div class="apos-modal-tabs">
+            <div class="apos-modal-tab-control">
+              {% for group in groups %}
+                <div class="apos-modal-tab-title {% if loop.first %}apos-active{% endif %}" data-tab="{{ group.name }}"><i class="{{ group.icon }}"></i> {{ group.label }}</div>
+              {% endfor %}
+            </div>
+        {% endif %}
+        {{ schemaOpenGroup(fields, field.group, activeGroup) }}
+        {% set lastGroup = field.group %}
+      {% endif %}
       {# Invokes standard templates for each type in
         apostrophe-schemas/templates/views, or custom renderers
         if supplied for the field's type or that individual field #}
@@ -45,5 +82,9 @@
       {% set fromFound = true %}
     {% endif %}
   {% endfor %}
+  {% if lastGroup %}
+    {{ schemaCloseGroup() }}
+    </div>
+  {% endif %}
 {% endmacro %}
 

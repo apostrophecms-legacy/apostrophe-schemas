@@ -193,7 +193,9 @@ function AposSchemas() {
     joinByArrayReverse: function(data, name, $field, $el, field) {
       // Not edited on this side of the relation
     },
-
+    group: function(data, name, $field, $el, field) {
+      // Just a presentation thing
+    },
     // The rest are very simple because the server does
     // the serious sanitization work and the representation in the DOM
     // is a simple form element
@@ -389,6 +391,10 @@ function AposSchemas() {
     },
     joinByArrayReverse: function(data, name, $field, $el, field, callback) {
       // Not edited on the reverse side
+      return callback();
+    },
+    group: function(data, name, $field, $el, field, callback) {
+      // Just a presentation thing
       return callback();
     },
     date: function(data, name, $field, $el, field, callback) {
