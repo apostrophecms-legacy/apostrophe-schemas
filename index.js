@@ -253,6 +253,9 @@ function ApostropheSchemas(options, callback) {
       if (_password.length) {
         snippet[name] = self._apos.hashPassword(data.password);
       }
+    },
+    group: function(data, name, snippet, field) {
+      // This is a visual grouping element and has no data
     }
   };
   // As far as the server is concerned a singleton is just an area
