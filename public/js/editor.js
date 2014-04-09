@@ -42,6 +42,9 @@ function AposSchemas() {
     $el.find('[data-name]').removeClass('apos-error');
     var failing;
     _.each(schema, function(field) {
+      if (field.contextual) {
+        return;
+      }
       // This won't be enough for every type of field, so we pass $el too
       var $field = $el.findByName(field.name);
       if (!$field.length) {
