@@ -388,6 +388,13 @@ function ApostropheSchemas(options, callback) {
       if (field.legacy && (data[field.legacy] !== undefined)) {
         data[field.name] = data[field.legacy];
       }
+      // Fields that are contextual are edited in the context of a
+      // show page and do not appear in regular schema forms. They are
+      // however legitimate in imports, so we make sure it's a form
+      // and not a CSV that we're skipping it for.
+      if (field.contextual && (from === 'form')) {
+        return;
+      }
       self.converters[from][field.type](data, field.name, object, field);
     });
   };

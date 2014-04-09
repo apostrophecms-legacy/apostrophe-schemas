@@ -48,8 +48,9 @@
     {% set found = fromFound and (not toFound) %}
     {% set notExcepted = (not aposContains(options.except, field.name)) %}
     {% set allowed = (not options.only) or aposContains(options.only, field.name) %}
+    {% set notContextual = (not field.contextual) %}
 
-    {% if (found and notExcepted and allowed) %}
+    {% if (found and notExcepted and allowed and notContextual) %}
       {% if field.group and (field.group != lastGroup) %}
         {% if lastGroup %}
           {{ schemaCloseGroup() }}
