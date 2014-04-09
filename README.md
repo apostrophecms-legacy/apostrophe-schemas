@@ -143,29 +143,34 @@ To indicate that the field named `body` has an error, in the same style that is 
 
 One lonnnnng scrolling list of fields is usually not user-friendly.
 
-You may group fields together into tabs instead using the `groupFields` option. Here's how we do it in the `apostrophe-blog` module:
+You may group fields together into tabs instead using the `groupFields` option. Here's how you would do it if you wanted to override our tab choices for the blog:
 
 ```javascript
-  options.groupFields = options.groupFields ||
-    // We don't list the title field so it stays on top
-    [
-      {
-        name: 'content',
-        label: 'Content',
-        icon: 'content',
-        fields: [
-          'thumbnail', 'body'
-        ]
-      },
-      {
-        name: 'details',
-        label: 'Details',
-        icon: 'metadata',
-        fields: [
-          'slug', 'published', 'publicationDate', 'publicationTime', 'tags'
-        ]
-      }
-    ];
+modules: {
+  'apostrophe-blog': {
+    groupFields: [
+      // We don't list the title field so it stays on top
+      [
+        {
+          name: 'content',
+          label: 'Content',
+          icon: 'content',
+          fields: [
+            'thumbnail', 'body'
+          ]
+        },
+        {
+          name: 'details',
+          label: 'Details',
+          icon: 'metadata',
+          fields: [
+            'slug', 'published', 'publicationDate', 'publicationTime', 'tags'
+          ]
+        }
+      ];
+    ]
+  }
+}
 ```
 
 Each group has a name, a label, an icon (passed as a CSS class on the tab's icon element), and an array of field names.
