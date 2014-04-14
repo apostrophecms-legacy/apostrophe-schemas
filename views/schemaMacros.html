@@ -83,7 +83,9 @@
       {% set fromFound = true %}
     {% endif %}
   {% endfor %}
-  {% if lastGroup %}
+  {# Nunjucks won't let us just test lastGroup from here due to #}
+  {# scoping issues https://github.com/mozilla/nunjucks/issues/166 #}
+  {% if aposFilterNonempty(fields, 'group').length %}
     {{ schemaCloseGroup() }}
     </div>
   {% endif %}

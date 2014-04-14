@@ -150,24 +150,22 @@ modules: {
   'apostrophe-blog': {
     groupFields: [
       // We don't list the title field so it stays on top
-      [
-        {
-          name: 'content',
-          label: 'Content',
-          icon: 'content',
-          fields: [
-            'thumbnail', 'body'
-          ]
-        },
-        {
-          name: 'details',
-          label: 'Details',
-          icon: 'metadata',
-          fields: [
-            'slug', 'published', 'publicationDate', 'publicationTime', 'tags'
-          ]
-        }
-      ];
+      {
+        name: 'content',
+        label: 'Content',
+        icon: 'content',
+        fields: [
+          'thumbnail', 'body'
+        ]
+      },
+      {
+        name: 'details',
+        label: 'Details',
+        icon: 'metadata',
+        fields: [
+          'slug', 'published', 'publicationDate', 'publicationTime', 'tags'
+        ]
+      }
     ]
   }
 }

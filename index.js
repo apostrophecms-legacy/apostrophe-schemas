@@ -147,7 +147,7 @@ function ApostropheSchemas(options, callback) {
           if (field) {
             field.group = group.name;
           } else {
-            throw new Error('Nonexistent field ' + field + ' referenced by groups option in schemas.compose');
+            throw new Error('Nonexistent field ' + name + ' referenced by groups option in schemas.compose');
           }
         });
       });
