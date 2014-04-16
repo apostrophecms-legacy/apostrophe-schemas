@@ -175,7 +175,7 @@ function AposSchemas() {
       // Fix $field since we can't use the regular name attribute here
       $field = $el.find('[data-name="' + name + '"]');
       // The server will do the work of moving it to the idField as needed
-      data[name] = $field.selective('get')[0];
+      data[name] = $field.selective('get', { incomplete: true })[0];
       if (field.required && !data[name]) {
         return 'required';
       }
@@ -188,7 +188,7 @@ function AposSchemas() {
       $field = $el.find('[data-name="' + name + '"]');
       // The server will do the work of processing it all into
       // the relationshipsField and idsField separately for us if needed
-      data[name] = $field.selective('get');
+      data[name] = $field.selective('get', { incomplete: true });
       if (field.required && !data[name].length) {
         return 'required';
       }
@@ -221,7 +221,7 @@ function AposSchemas() {
       }
     },
     tags: function(data, name, $field, $el, field) {
-      data[name] = $el.find('[data-name="' + name + '"]').selective('get');
+      data[name] = $el.find('[data-name="' + name + '"]').selective('get', { incomplete: true });
       if (field.required && !data[name].length) {
         return 'required';
       }
