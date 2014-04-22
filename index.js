@@ -210,52 +210,65 @@ function ApostropheSchemas(options, callback) {
   // regular forms and override those that are different (areas)
   self.converters = {};
   self.converters.csv = {
-    area: function(data, name, snippet, field) {
+    area: function(req, data, name, snippet, field, cb) {
       snippet[name] = self._apos.textToArea(data[name]);
+      return setImmediate(cb);
     },
-    string: function(data, name, snippet, field) {
+    string: function(req, data, name, snippet, field, cb) {
       snippet[name] = self._apos.sanitizeString(data[name], field.def);
+      return setImmediate(cb);
     },
-    slug: function(data, name, snippet, field) {
+    slug: function(req, data, name, snippet, field, cb) {
       snippet[name] = self._apos.slugify(self._apos.sanitizeString(data[name], field.def));
+      return setImmediate(cb);
     },
-    tags: function(data, name, snippet, field) {
+    tags: function(req, data, name, snippet, field, cb) {
       var tags;
       tags = self._apos.sanitizeString(data[name]);
       tags = self._apos.tagsToArray(tags);
       snippet[name] = tags;
+      return setImmediate(cb);
     },
-    boolean: function(data, name, snippet, field) {
+    boolean: function(req, data, name, snippet, field, cb) {
       snippet[name] = self._apos.sanitizeBoolean(data[name], field.def);
+      return setImmediate(cb);
     },
-    select: function(data, name, snippet, field) {
+    select: function(req, data, name, snippet, field, cb) {
       snippet[name] = self._apos.sanitizeSelect(data[name], field.choices, field.def);
+      return setImmediate(cb);
     },
-    integer: function(data, name, snippet, field) {
+    integer: function(req, data, name, snippet, field, cb) {
       snippet[name] = self._apos.sanitizeInteger(data[name], field.def, field.min, field.max);
+      return setImmediate(cb);
     },
-    float: function(data, name, snippet, field) {
+    float: function(req, data, name, snippet, field, cb) {
       snippet[name] = self._apos.sanitizeFloat(data[name], field.def, field.min, field.max);
+      return setImmediate(cb);
     },
-    url: function(data, name, snippet, field) {
+    url: function(req, data, name, snippet, field, cb) {
       snippet[name] = self._apos.sanitizeUrl(data[name], field.def);
+      return setImmediate(cb);
     },
-    date: function(data, name, snippet, field) {
+    date: function(req, data, name, snippet, field, cb) {
       snippet[name] = self._apos.sanitizeDate(data[name], field.def);
+      return setImmediate(cb);
     },
-    time: function(data, name, snippet, field) {
+    time: function(req, data, name, snippet, field, cb) {
       snippet[name] = self._apos.sanitizeTime(data[name], field.def);
+      return setImmediate(cb);
     },
-    password: function(data, name, snippet, field) {
+    password: function(req, data, name, snippet, field, cb) {
       // Change the stored password hash only if a new value
       // has been offered
       var _password = self._apos.sanitizeString(data.password);
       if (_password.length) {
         snippet[name] = self._apos.hashPassword(data.password);
       }
+      return setImmediate(cb);
     },
-    group: function(data, name, snippet, field) {
+    group: function(req, data, name, snippet, field, cb) {
       // This is a visual grouping element and has no data
+      return setImmediate(cb);
     }
   };
   // As far as the server is concerned a singleton is just an area
@@ -264,7 +277,7 @@ function ApostropheSchemas(options, callback) {
   self.converters.form = {};
   extend(self.converters.form, self.converters.csv, true);
 
-  self.converters.form.singleton = self.converters.form.area = function(data, name, snippet) {
+  self.converters.form.singleton = self.converters.form.area = function(req, data, name, snippet, field, cb) {
     var content = [];
     try {
       content = JSON.parse(data[name]);
@@ -273,17 +286,20 @@ function ApostropheSchemas(options, callback) {
     }
     self._apos.sanitizeItems(content);
     snippet[name] = { items: content, type: 'area' };
+    return setImmediate(cb);
   };
 
-  self.converters.form.joinByOne = function(data, name, snippet, field) {
+  self.converters.form.joinByOne = function(req, data, name, snippet, field, cb) {
     snippet[field.idField] = self._apos.sanitizeId(data[name]);
+    return setImmediate(cb);
   };
 
-  self.converters.form.joinByOneReverse = function(data, name, snippet, field) {
+  self.converters.form.joinByOneReverse = function(req, data, name, snippet, field, cb) {
     // Not edited on this side of the relation
+    return setImmediate(cb);
   };
 
-  self.converters.form.joinByArray = function(data, name, snippet, field) {
+  self.converters.form.joinByArray = function(req, data, name, snippet, field, cb) {
     var input = data[name] || [];
     if (!Array.isArray(input)) {
       input = [];
@@ -332,14 +348,17 @@ function ApostropheSchemas(options, callback) {
         }
       }
     });
+    return setImmediate(cb);
   };
 
-  self.converters.form.joinByArrayReverse = function(data, name, snippet, field) {
+  self.converters.form.joinByArrayReverse = function(req, data, name, snippet, field, cb) {
     // Not edited on this side of the relation
+    return setImmediate(cb);
   };
 
-  self.converters.form.tags = function(data, name, snippet, field) {
+  self.converters.form.tags = function(req, data, name, snippet, field, cb) {
     snippet[name] = self._apos.sanitizeTags(data[name]);
+    return setImmediate(cb);
   };
 
   // END CONVERTERS
@@ -381,22 +400,31 @@ function ApostropheSchemas(options, callback) {
   };
 
   // Convert submitted `data`, sanitizing it and populating `object` with it
-  self.convertFields = function(schema, from, data, object) {
-    _.each(schema, function(field) {
-      // Support for legacy field names, which makes it easier to support
-      // legacy new.html and edit.html templates for things like the blog
-      if (field.legacy && (data[field.legacy] !== undefined)) {
-        data[field.name] = data[field.legacy];
-      }
+  self.convertFields = function(req, schema, from, data, object, callback) {
+    if (arguments.length !== 6) {
+      throw new Error("convertFields now takes 6 arguments, with req added in front and callback added at the end");
+    }
+    if (!req) {
+      throw new Error("convertFields invoked without a req, do you have one in your context?");
+    }
+    var i;
+    return async.each(schema, function(field, callback) {
       // Fields that are contextual are edited in the context of a
       // show page and do not appear in regular schema forms. They are
       // however legitimate in imports, so we make sure it's a form
       // and not a CSV that we're skipping it for.
       if (field.contextual && (from === 'form')) {
-        return;
+        return callback();
       }
-      self.converters[from][field.type](data, field.name, object, field);
-    });
+      if (!self.converters[from][field.type]) {
+        throw new Error("No converter exists for schema field type " + field.type + ", field definition was: " + JSON.stringify(field));
+      }
+      if (self.converters[from][field.type].length !== 6) {
+        console.error(self.converters[from][field.type].toString());
+        throw new Error("Schema converter methods must now take the following arguments: req, data, field.name, object, field, callback. They must also invoke the callback.");
+      }
+      self.converters[from][field.type](req, data, field.name, object, field, callback);
+    }, callback);
   };
 
   // Used to implement 'join', below
@@ -547,6 +575,10 @@ function ApostropheSchemas(options, callback) {
           permalink: true
         }
       };
+
+      // Allow options to the getter to be specified in the schema,
+      // notably editable: true
+      _.extend(options.getOptions, join.getOptions || {});
       return self.joinrs[join.type](req, join, options, objects, callback);
     }, function(err) {
       return callback(err);

@@ -251,13 +251,13 @@ This is the same in reverse. The properties of the object are set based on the v
 
 ### Editing: Saving Objects On the Server
 
-Serializing the object and sending it to the server is up to you. (We recommend using `$.jsonCall`.) But once it gets there, you can use the `convertFields` method to clean up the data and make sure it obeys the schema. The incoming fields should be properties of `data`, and will be sanitized and copied to properties of `object`:
+Serializing the object and sending it to the server is up to you. (We recommend using `$.jsonCall`.) But once it gets there, you can use the `convertFields` method to clean up the data and make sure it obeys the schema. The incoming fields should be properties of `data`, and will be sanitized and copied to properties of `object`. Then the callback is invoked:
 
 ```javascript
-schemas.convertFields(schema, 'form', data, object)
+schemas.convertFields(req, schema, 'form', data, object, callback)
 ```
 
-The second argument is set to `'form'` to indicate that this data came from a form and should go through that converter.
+The third argument is set to `'form'` to indicate that this data came from a form and should go through that converter.
 
 Now you can save `object` as you normally would.
 
@@ -624,7 +624,7 @@ schemas.addFieldType({
   name: 'list',
   render: self.renderer('schemaList'),
   converters: {
-    form: function(data, name, object, field) {
+    form: function(req, data, name, object, field, callback) {
       // Don't trust anything we get from the browser! Let's sanitize!
 
       var maybe = _.isArray(data[name]) ? data[name] || [];
@@ -643,12 +643,18 @@ schemas.addFieldType({
         }
       });
       object[name] = yes;
+      return setImmmediate(function() {
+        return callback(null);
+      });
     },
 
     // CSV is a lot simpler because the input is always just
     // a string. Split on "|" to allow more than one string in the list
-    csv: function(data, name, object, field) {
+    csv: function(req, data, name, object, field, callback) {
       object[name] = data[name].split('|');
+      return setImmediate(function() {
+        return callback(null);
+      });
     }
   }
 });
