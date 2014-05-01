@@ -345,7 +345,7 @@ function AposSchemas() {
       // For now this is still correct on the browser side, getManager
       // always returns undefined for an index type
       var manager = aposPages.getManager(field.withType);
-      var autocomplete = '/apos-pages/autocomplete';
+      var autocomplete = '/apos-pages/autocomplete?type=' + field.withType;
       if (manager) {
         autocomplete = manager._action + '/autocomplete';
       }
