@@ -524,7 +524,7 @@ function AposSchemas() {
       $field.val(data[name]);
       apos.enhanceDate($field);
       if (field.legacy) {
-        apos.enhanceDate(self.findByNameSafe($el, field.legacy));
+        apos.enhanceDate(self.findField($el, field.legacy));
       }
       return apos.afterYield(callback);
     },
