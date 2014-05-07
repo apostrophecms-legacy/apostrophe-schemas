@@ -10,6 +10,7 @@ This module is now in production use, powering the `apostrophe-snippets` module,
     * [What field types are available?](#what-field-types-are-available)
     * [Validation](#validation)
     * [Grouping fields into tabs](#grouping-fields-into-tabs)
+    * [Arrays in schemas](#arrays-in-schemas)
   * Editing
     * [Schemas in Nunjucks Templates](#editing-schemas-in-nunjucks-templates)
     * [Browser-Side JavaScript](#editing-browser-side-javascript)
@@ -117,7 +118,7 @@ When using the `area` and `singleton` types, you may include an `options` proper
 
 When using the `singleton` type, you must always specify `widgetType` to indicate what type of widget should appear.
 
-Joins are also supported as described later.
+[Joins](#joins-in-schemas) and [arrays](#arrays-in-schemas) are also supported as described later.
 
 #### Validation
 
@@ -176,6 +177,75 @@ Each group has a name, a label, an icon (passed as a CSS class on the tab's icon
 In `app.js`, you can simply pass `groupFields` like any other option when configuring a module. *The last call to `groupFields` wins, overriding any previous attempts to group the fields, so be sure to list all of them* except for fields you want to stay visible at all times above the tabs.
 
 **Be aware that group names must be distinct from field names.** Apostrophe will stop the music and tell you if they are not.
+
+#### Arrays in schemas
+
+Let's say you're managing "companies," and each company has several "offices." Wouldn't it be nice if you could edit a list of offices while editing the company?
+
+This is easy to do with the `array` field type:
+
+```javascript
+{
+  name: 'offices',
+  label: 'Offices',
+  type: 'array',
+  schema: [
+    {
+      name: 'city',
+      label: 'City',
+      type: 'string'
+    },
+    {
+      name: 'zip',
+      label: 'Zip',
+      type: 'string',
+      def: '19147'
+    },
+    {
+      name: 'thumbnail',
+      label: 'Thumbnail',
+      type: 'singleton',
+      widgetType: 'slideshow',
+      options: {
+        limit: 1
+      }
+    }
+  ]
+}
+```javascript
+
+Each `array` has its own `schema`, which supports all of the usual field types. You an even nest an `array` in another `array`.
+
+It's easy to access the resulting information in a page template, such as the `show` template for companies. The array property is... you guessed it... an array! Not hard to iterate over at all:
+
+```markup
+<h4>Offices</h4>
+<ul>
+  {% for office in item.offices %}
+    <li>{{ office.city }}, {{ office.zip }}</li>
+  {% endfor %}
+</ul>
+```
+
+Areas and thumbnails are allowed in arrays. In order to display them in a page template,  you'll need to use this syntax:
+
+```markup
+{% for office in item.offices %}
+  {{ aposSingleton({ area: office.thumbnail, type: 'slideshow', more options... }) }}
+{% endfor %}
+```
+
+For an area you would write:
+
+```markup
+{% for office in item.offices %}
+  {{ aposArea({ area: office.body, more options... }) }}
+{% endfor %}
+```
+
+Since the area is not a direct property of the page, we can't use the `(page, areaname)` syntax that is typically more convenient.
+
+Areas and thumbnails in arrays cannot be edited "in context" on a page, they must be updated through the schema editor.
 
 #### Preventing Autocomplete
 

@@ -269,6 +269,10 @@ function ApostropheSchemas(options, callback) {
     group: function(req, data, name, snippet, field, cb) {
       // This is a visual grouping element and has no data
       return setImmediate(cb);
+    },
+    array: function(req, data, name, snippet, field, cb) {
+      // We don't do arrays in CSV, it would be painful to work with
+      return setImmediate(cb);
     }
   };
   // As far as the server is concerned a singleton is just an area
@@ -287,6 +291,29 @@ function ApostropheSchemas(options, callback) {
     self._apos.sanitizeItems(content);
     snippet[name] = { items: content, type: 'area' };
     return setImmediate(cb);
+  };
+
+  // An array of objects with their own schema
+  self.converters.form.array = function(req, data, name, snippet, field, cb) {
+    var schema = field.schema;
+    data = data[name];
+    if (!Array.isArray(data)) {
+      data = [];
+    }
+    var results = [];
+    return async.eachSeries(data, function(datum, cb) {
+      var result = {};
+      return self.convertFields(req, schema, 'form', datum, result, function(err) {
+        if (err) {
+          return cb(err);
+        }
+        results.push(result);
+        return cb(null);
+      });
+    }, function(err) {
+      snippet[name] = results;
+      return cb(err);
+    });
   };
 
   self.converters.form.joinByOne = function(req, data, name, snippet, field, cb) {

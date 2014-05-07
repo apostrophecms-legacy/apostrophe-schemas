@@ -12,8 +12,9 @@ function AposSchemas() {
       }
       var field = schema[i];
 
-      // Not all displayers use this
-      var $field = $el.findByName(field.name);
+      // Utilized by simple displayers that use a simple HTML
+      // element with a name attribute
+      var $field = self.findField($el, field.name);
 
       // If this field maps to a plain HTML element set the
       // required attribute when appropriate. See:
@@ -39,26 +40,35 @@ function AposSchemas() {
   // Gather data from form elements and push it into properties of the data object,
   // as specified by the schema provided. The inverse of self.populateSomeFields
   self.convertFields = function($el, schema, data, callback) {
-    $el.find('[data-name]').removeClass('apos-error');
+    self.findSafe($el, '[data-name]').removeClass('apos-error');
     var failing;
-    _.each(schema, function(field) {
+
+    // async for loop
+    var i = 0;
+    function convertField() {
+      if (i === schema.length) {
+        return apos.afterYield(_.partial(callback, failing));
+      }
+      var field = schema[i];
       if (field.contextual) {
-        return;
+        i++;
+        return apos.afterYield(convertField);
       }
       // This won't be enough for every type of field, so we pass $el too
-      var $field = $el.findByName(field.name);
+      var $field = self.findField($el, field.name);
       if (!$field.length) {
-        $field = $el.findByName(field.legacy);
+        $field = self.findField($el, field.legacy);
       }
-      var result = self.converters[field.type](data, field.name, $field, $el, field);
-      if (result) {
-        apos.log(result);
-        apos.log('addError');
-        self.addError($el, field.name);
-        failing = field;
-      }
-    });
-    return callback(failing);
+      return self.converters[field.type](data, field.name, $field, $el, field, function(err) {
+        if (err) {
+          self.addError($el, field.name);
+          failing = field;
+        }
+        i++;
+        return apos.afterYield(convertField);
+      });
+    }
+    convertField();
   };
 
   self.enableSingleton = function($el, name, area, type, optionsArg, callback) {
@@ -77,12 +87,13 @@ function AposSchemas() {
       type: type
     });
 
+    var $fieldset = self.findFieldset($el, name);
     refreshSingleton(items, callback);
 
     function refreshSingleton(items, callback) {
       options.content = JSON.stringify(items);
       $.post('/apos/edit-virtual-singleton', options, function(data) {
-        var $editView = $el.find('[data-' + name + '-edit-view]');
+        var $editView = self.findSafe($fieldset, '[data-' + name + '-edit-view]');
         $editView.html('');
         $editView.append(data);
 
@@ -95,13 +106,13 @@ function AposSchemas() {
         // better to create a container that allows widgets to be rendered
         // inline, without a nested dialog box
 
-        var $singleton = $editView.find('.apos-singleton:first');
+        var $singleton = self.findSafe($editView, '.apos-singleton:first');
         $singleton.on('aposEdited', function(e, data) {
           refreshSingleton([data], function() {
             // A change event on the singleton's wrapper signifies
             // that getSingletonItem and getSingletonJSON can now be
             // called to see the new data
-            $el.find('[data-name="' + name + '"]').trigger('change');
+            $fieldset.trigger('change');
           });
         });
 
@@ -122,8 +133,9 @@ function AposSchemas() {
     if (area && area.items) {
       items = area.items;
     }
+    var $fieldset = self.findFieldset($el, name);
     $.post('/apos/edit-virtual-area', { content: JSON.stringify(items), options: JSON.stringify(options) }, function(data) {
-      var $editView = $el.find('[data-' + name + '-edit-view]');
+      var $editView = self.findSafe($fieldset, '[data-' + name + '-edit-view]');
       $editView.append(data);
       return callback(null);
     });
@@ -131,21 +143,24 @@ function AposSchemas() {
 
   // Access the widget data for a particular singleton
   self.getSingletonItem = function($el, name) {
-    var items = $el.find('[data-' + name + '-edit-view]').data('items');
+    var $fieldset = self.findFieldset($el, name);
+    var items = self.findSafe($fieldset, '[data-' + name + '-edit-view]').data('items');
     items = items || [];
     return items[0];
   };
 
   // Retrieve a JSON string to serialize the singleton
   self.getSingletonJSON = function($el, name) {
-    var items = $el.find('[data-' + name + '-edit-view]').data('items');
+    var $fieldset = self.findFieldset($el, name);
+    var items = self.findSafe($fieldset, '[data-' + name + '-edit-view]').data('items');
     items = items || [];
     return JSON.stringify(items);
   };
 
   // Retrieve a JSON string to serialize the area
   self.getAreaJSON = function($el, name) {
-    var $property = $el.find('[data-' + name + '-edit-view]');
+    var $fieldset = self.findFieldset($el, name);
+    var $property = self.findSafe($fieldset, '[data-' + name + '-edit-view]');
     return apos.stringifyArea($property.find('.apos-area:first'));
   };
 
@@ -156,118 +171,166 @@ function AposSchemas() {
   // in the form differs greatly from the representation the server wants
   self.converters = {
     // Convert the tough cases
-    area: function(data, name, $field, $el, field) {
+    area: function(data, name, $field, $el, field, callback) {
       data[name] = self.getAreaJSON($el, name);
       // TODO: this is very lazy and doesn't bother to look for things
       // like widgets with nothing in them. We should think seriously about
       // server side validation at this point.
       if (field.required && ((data[name] === '[]') || (data[name] === '[{"type":"richText","content":""}]'))) {
-        return 'required';
+        return apos.afterYield(_.partial(callback, 'required'));
       }
+      return apos.afterYield(callback);
     },
-    singleton: function(data, name, $field, $el, field) {
+    singleton: function(data, name, $field, $el, field, callback) {
       data[name] = self.getSingletonJSON($el, name);
       if (field.required && ((data[name] === '[]') || (data[name] === '[{"type":"richText","content":""}]'))) {
-        return 'required';
+        return apos.afterYield(_.partial(callback, 'required'));
       }
+      return apos.afterYield(callback);
     },
-    joinByOne: function(data, name, $field, $el, field) {
+    array: function(data, name, $field, $el, field, callback) {
+      var results = [];
+      var $fieldset = self.findFieldset($el, name);
+      var $elements = self.findSafe($fieldset, '[data-element]:not(.apos-template)');
+
+      var i = 0;
+
+      var err;
+
+      function convertElement() {
+        if (i === $elements.length) {
+          data[name] = results;
+          return apos.afterYield(_.partial(callback, err));
+        }
+        var result = {};
+        var $element = $($elements[i]);
+        return self.convertFields($element, field.schema, result, function(_err) {
+          if (_err) {
+            err = _err;
+          }
+          results.push(result);
+          i++;
+          return apos.afterYield(convertElement);
+        });
+      }
+
+      convertElement();
+    },
+    joinByOne: function(data, name, $field, $el, field, callback) {
       // Fix $field since we can't use the regular name attribute here
-      $field = $el.find('[data-name="' + name + '"]');
+      $field = self.findSafe($el, '[data-name="' + name + '"]');
       // The server will do the work of moving it to the idField as needed
       data[name] = $field.selective('get', { incomplete: true })[0];
       if (field.required && !data[name]) {
-        return 'required';
+        return apos.afterYield(_.partial(callback, 'required'));
       }
+      return apos.afterYield(callback);
     },
-    joinByOneReverse: function(data, name, $field, $el, field) {
+    joinByOneReverse: function(data, name, $field, $el, field, callback) {
       // Not edited on this side of the relation
+      return apos.afterYield(callback);
     },
-    joinByArray: function(data, name, $field, $el, field) {
+    joinByArray: function(data, name, $field, $el, field, callback) {
       // Fix $field since we can't use the regular name attribute here
-      $field = $el.find('[data-name="' + name + '"]');
+      $field = self.findSafe($el, '[data-name="' + name + '"]');
       // The server will do the work of processing it all into
       // the relationshipsField and idsField separately for us if needed
       data[name] = $field.selective('get', { incomplete: true });
       if (field.required && !data[name].length) {
-        return 'required';
+        return apos.afterYield(function() {
+          return apos.afterYield(_.partial(callback, 'required'));
+        });
       }
+      return apos.afterYield(callback);
     },
-    joinByArrayReverse: function(data, name, $field, $el, field) {
+    joinByArrayReverse: function(data, name, $field, $el, field, callback) {
       // Not edited on this side of the relation
+      return apos.afterYield(callback);
     },
-    group: function(data, name, $field, $el, field) {
+    group: function(data, name, $field, $el, field, callback) {
       // Just a presentation thing
+      return apos.afterYield(callback);
     },
     // The rest are very simple because the server does
     // the serious sanitization work and the representation in the DOM
     // is a simple form element
-    string: function(data, name, $field, $el, field) {
+    string: function(data, name, $field, $el, field, callback) {
       data[name] = $field.val();
       if (field.required && !data[name].length) {
-        return 'required';
+        return apos.afterYield(_.partial(callback, 'required'));
       }
+      return apos.afterYield(callback);
     },
-    password: function(data, name, $field, $el, field) {
+    password: function(data, name, $field, $el, field, callback) {
       data[name] = $field.val();
       if (field.required && !data[name].length) {
-        return 'required';
+        return apos.afterYield(_.partial(callback, 'required'));
       }
+      return apos.afterYield(callback);
     },
-    slug: function(data, name, $field, $el, field) {
+    slug: function(data, name, $field, $el, field, callback) {
       data[name] = $field.val();
       if (field.required && !data[name].length) {
-        return 'required';
+        return apos.afterYield(_.partial(callback, 'required'));
       }
+      return apos.afterYield(callback);
     },
-    tags: function(data, name, $field, $el, field) {
-      data[name] = $el.find('[data-name="' + name + '"]').selective('get', { incomplete: true });
+    tags: function(data, name, $field, $el, field, callback) {
+      data[name] = self.findSafe($el, '[data-name="' + name + '"]').selective('get', { incomplete: true });
       if (field.required && !data[name].length) {
-        return 'required';
+        return apos.afterYield(_.partial(callback, 'required'));
       }
+      return apos.afterYield(callback);
     },
-    boolean: function(data, name, $field, $el, field) {
+    boolean: function(data, name, $field, $el, field, callback) {
       data[name] = $field.val();
       // Seems odd but sometimes used to mandate an "I agree" box
       if (field.required && !data[name]) {
-        return 'required';
+        return apos.afterYield(_.partial(callback, 'required'));
       }
+      return apos.afterYield(callback);
     },
-    select: function(data, name, $field, $el, field) {
+    select: function(data, name, $field, $el, field, callback) {
       data[name] = $field.val();
       if (field.required && !data[name].length) {
-        return 'required';
+        return apos.afterYield(_.partial(callback, 'required'));
       }
+      return apos.afterYield(callback);
     },
-    integer: function(data, name, $field, $el, field) {
+    integer: function(data, name, $field, $el, field, callback) {
       data[name] = $field.val();
       if (field.required && !data[name].length) {
-        return 'required';
+        return apos.afterYield(_.partial(callback, 'required'));
       }
+      return apos.afterYield(callback);
     },
-    float: function(data, name, $field, $el, field) {
+    float: function(data, name, $field, $el, field, callback) {
       data[name] = $field.val();
       if (field.required && !data[name].length) {
-        return 'required';
+        return apos.afterYield(_.partial(callback, 'required'));
       }
+      return apos.afterYield(callback);
     },
-    url: function(data, name, $field, $el, field) {
+    url: function(data, name, $field, $el, field, callback) {
       data[name] = $field.val();
       if (field.required && !data[name].length) {
-        return 'required';
+        return apos.afterYield(_.partial(callback, 'required'));
       }
+      return apos.afterYield(callback);
     },
-    date: function(data, name, $field, $el, field) {
+    date: function(data, name, $field, $el, field, callback) {
       data[name] = $field.val();
       if (field.required && !data[name].length) {
-        return 'required';
+        return apos.afterYield(_.partial(callback, 'required'));
       }
+      return apos.afterYield(callback);
     },
-    time: function(data, name, $field, $el, field) {
+    time: function(data, name, $field, $el, field, callback) {
       data[name] = $field.val();
       if (field.required && !data[name].length) {
-        return 'required';
+        return apos.afterYield(_.partial(callback, 'required'));
       }
+      return apos.afterYield(callback);
     },
   };
 
@@ -279,25 +342,82 @@ function AposSchemas() {
     singleton: function(data, name, $field, $el, field, callback) {
       return self.enableSingleton($el, name, data[name], field.widgetType, field.options || {}, callback);
     },
+    array: function(data, name, $field, $el, field, callback) {
+      var $fieldset = self.findFieldset($el, name);
+      var $template = self.findSafe($fieldset, '.apos-template[data-element]');
+
+      var $add = self.findSafe($fieldset, '[data-add]');
+      var $elements = self.findSafe($fieldset, '[data-elements]');
+
+      // Add the elements via an async for loop without
+      // the async module. -Tom
+
+      var i = 0;
+      data = data[name] || [];
+      function nextElement() {
+        if (i === data.length) {
+          $elements.sortable({ handle: '[data-move]' });
+          return callback(null);
+        }
+        var $element = $template.clone();
+        $element.removeClass('apos-template');
+        addRemoveHandler($element);
+
+        $elements.append($element);
+        return self.populateFields($element, field.schema, data[i], function() {
+          i++;
+          return nextElement();
+        });
+      }
+      nextElement();
+
+      $add.on('click', function() {
+        var $element = $template.clone();
+        $element.removeClass('apos-template');
+        $elements.append($element);
+        addRemoveHandler($element);
+
+        var element = {};
+        _.each(field.schema, function(field) {
+          if (field.def !== undefined) {
+            element[field.name] = field.def;
+          }
+        });
+
+        self.populateFields($element, field.schema, element, function() {
+          // Make sure lister gets a crack
+          apos.emit('enhance', $element);
+        });
+        return false;
+      });
+
+      function addRemoveHandler($element) {
+        var $remove = self.findSafe($element, '[data-remove]');
+        $remove.on('click', function() {
+          $element.remove();
+          return false;
+        });
+      }
+    },
     string: function(data, name, $field, $el, field, callback) {
       $field.val(data[name]);
-      return callback();
+      return apos.afterYield(callback);
     },
     password: function(data, name, $field, $el, field, callback) {
       $field.val(data[name]);
-      return callback();
+      return apos.afterYield(callback);
     },
     slug: function(data, name, $field, $el, field, callback) {
       $field.val(data[name]);
-      return callback();
+      return apos.afterYield(callback);
     },
     tags: function(data, name, $field, $el, field, callback) {
-      apos.enableTags($el.find('[data-name="' + name + '"]'), data[name]);
-      return callback();
+      apos.enableTags(self.findSafe($el, '[data-name="' + name + '"]'), data[name]);
+      return apos.afterYield(callback);
     },
     url: function(data, name, $field, $el, field, callback) {
       $field.val(data[name]);
-      return callback();
+      return apos.afterYield(callback);
     },
     select: function(data, name, $field, $el, field, callback) {
       var $options = $field.find('option');
@@ -316,23 +436,23 @@ function AposSchemas() {
       } else {
         $field.val(data[name]);
       }
-      return callback();
+      return apos.afterYield(callback);
     },
     integer: function(data, name, $field, $el, field, callback) {
       $field.val(data[name]);
-      return callback();
+      return apos.afterYield(callback);
     },
     float: function(data, name, $field, $el, field, callback) {
       $field.val(data[name]);
-      return callback();
+      return apos.afterYield(callback);
     },
     boolean: function(data, name, $field, $el, field, callback) {
       $field.val(data[name] ? '1' : '0');
-      return callback();
+      return apos.afterYield(callback);
     },
     joinByOne: function(data, name, $field, $el, field, callback) {
       // Since we can't use a regular name attribute for a div
-      $field = $el.find('[data-name="' + name + '"]');
+      $field = self.findSafe($el, '[data-name="' + name + '"]');
       if (!$field.length) {
         apos.log('Error: your new.html template for the ' + self.name + ' module does not have a snippetSelective call for the ' + name + ' join yet');
       }
@@ -350,15 +470,15 @@ function AposSchemas() {
         autocomplete = manager._action + '/autocomplete';
       }
       $field.selective({ limit: 1, data: selectiveData, source: autocomplete });
-      return callback();
+      return apos.afterYield(callback);
     },
     joinByOneReverse: function(data, name, $field, $el, field, callback) {
       // Not edited on the reverse side
-      return callback();
+      return apos.afterYield(callback);
     },
     joinByArray: function(data, name, $field, $el, field, callback) {
       // Since we can't use a regular name attribute for a div
-      $field = $el.find('[data-name="' + name + '"]');
+      $field = self.findSafe($el, '[data-name="' + name + '"]');
       if (!$field.length) {
         apos.log('Error: your new.html template for the ' + self.name + ' module does not have a snippetSelective call for the ' + name + ' join yet');
       }
@@ -390,30 +510,30 @@ function AposSchemas() {
         autocomplete = manager._action + '/autocomplete';
       }
       $field.selective({ preventDuplicates: true, sortable: field.sortable, extras: !!field.relationship, data: selectiveData, source: autocomplete });
-      return callback();
+      return apos.afterYield(callback);
     },
     joinByArrayReverse: function(data, name, $field, $el, field, callback) {
       // Not edited on the reverse side
-      return callback();
+      return apos.afterYield(callback);
     },
     group: function(data, name, $field, $el, field, callback) {
       // Just a presentation thing
-      return callback();
+      return apos.afterYield(callback);
     },
     date: function(data, name, $field, $el, field, callback) {
       $field.val(data[name]);
       apos.enhanceDate($field);
       if (field.legacy) {
-        apos.enhanceDate($el.findByName(field.legacy));
+        apos.enhanceDate(self.findByNameSafe($el, field.legacy));
       }
-      return callback();
+      return apos.afterYield(callback);
     },
     time: function(data, name, $field, $el, field, callback) {
       if (data[name] && data[name].length) {
         // Revert to local time for editing
         $field.val(apos.formatTime(data[name]));
       }
-      return callback();
+      return apos.afterYield(callback);
     },
   };
 
@@ -426,7 +546,7 @@ function AposSchemas() {
   // independent validation code.
 
   self.addError = function($el, name) {
-    $el.find('[data-name="' + name + '"]').addClass('apos-error');
+    self.findSafe($el, '[data-name="' + name + '"]').addClass('apos-error');
   };
 
   // A convenience allowing you to scroll to the first error present,
@@ -435,7 +555,7 @@ function AposSchemas() {
   // has invoked addError().
 
   self.scrollToError = function($el) {
-    var $element = $el.find('.apos-error');
+    var $element = self.findSafe($el, '.apos-error');
     if (!$element.length) {
       return;
     }
@@ -443,6 +563,37 @@ function AposSchemas() {
     var scrollTop = offset.top - 100;
     $('html, body').scrollTop(scrollTop);
     $element.find('input,select,textarea').first().focus();
+  };
+
+  // Used to search for fieldsets at this level of the schema,
+  // without false positives for any schemas nested within it
+  self.findFieldset = function($el, name) {
+    return self.findSafe($el, '[data-name="' + name + '"]');
+  };
+
+  // Used to search for elements without false positives from nested
+  // schemas in unrelated fieldsets
+  self.findSafe = function($el, sel) {
+    return $el.find(sel).filter(function() {
+      var $parents = $(this).parents();
+      var i;
+      for (i = 0; (i < $parents.length); i++) {
+        if ($parents[i] === $el[0]) {
+          return true;
+        }
+        if ($($parents[i]).hasClass('apos-fieldset')) {
+          return false;
+        }
+      }
+    });
+  };
+
+  // Used to search for simple elements that have a
+  // "name" attribute, without false positives from nested
+  // schemas in unrelated fieldsets.
+  self.findField = function($el, name) {
+    $fieldset = self.findFieldset($el, name);
+    return self.findSafe($fieldset, '[name="' + name + '"]');
   };
 }
 
