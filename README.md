@@ -212,7 +212,7 @@ This is easy to do with the `array` field type:
     }
   ]
 }
-```javascript
+```
 
 Each `array` has its own `schema`, which supports all of the usual field types. You an even nest an `array` in another `array`.
 
@@ -792,9 +792,11 @@ aposSchemas.addFieldType({
     // Be sure to invoke the callback
     return callback();
   },
-  converter: function(data, name, $field, $el, field) {
+  converter: function(data, name, $field, $el, field, callback) {
     $field = $el.find('[data-name="' + name + '"]');
     data[name] = $field.selective('get');
+    // Be sure to invoke the callback
+    return callback();
   }
 });
 ```
