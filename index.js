@@ -13,6 +13,7 @@ function ApostropheSchemas(options, callback) {
   self._apos.mixinModuleAssets(self, 'schemas', __dirname, options);
 
   self.pushAsset('script', 'editor', { when: 'user' });
+  self.pushAsset('stylesheet', 'editor', { when: 'user' });
 
   // We get constructed first so we need a method to inject the pages
   // module

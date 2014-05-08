@@ -362,6 +362,7 @@ function AposSchemas() {
         var $element = $template.clone();
         $element.removeClass('apos-template');
         addRemoveHandler($element);
+        addMoveHandler($element);
 
         $elements.append($element);
         return self.populateFields($element, field.schema, data[i], function() {
@@ -374,8 +375,9 @@ function AposSchemas() {
       $add.on('click', function() {
         var $element = $template.clone();
         $element.removeClass('apos-template');
-        $elements.append($element);
+        $elements.prepend($element);
         addRemoveHandler($element);
+        addMoveHandler($element);
 
         var element = {};
         _.each(field.schema, function(field) {
@@ -398,6 +400,21 @@ function AposSchemas() {
           return false;
         });
       }
+
+      function addMoveHandler($element) {
+        var $move = self.findSafe($element, '[data-move-item]');
+        $move.on('click', function() {
+          if ($(this).attr('data-move-item') === 'up') {
+            $element.prev().before($element);
+            console.log('up');
+          } else {
+            console.log('move down');
+            $element.next().after($element);
+          }
+          return false;
+        });
+      }
+
     },
     string: function(data, name, $field, $el, field, callback) {
       $field.val(data[name]);
