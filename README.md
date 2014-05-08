@@ -212,7 +212,7 @@ This is easy to do with the `array` field type:
     }
   ]
 }
-```javascript
+```
 
 Each `array` has its own `schema`, which supports all of the usual field types. You an even nest an `array` in another `array`.
 
