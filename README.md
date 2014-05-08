@@ -792,9 +792,11 @@ aposSchemas.addFieldType({
     // Be sure to invoke the callback
     return callback();
   },
-  converter: function(data, name, $field, $el, field) {
+  converter: function(data, name, $field, $el, field, callback) {
     $field = $el.find('[data-name="' + name + '"]');
     data[name] = $field.selective('get');
+    // Be sure to invoke the callback
+    return callback();
   }
 });
 ```
