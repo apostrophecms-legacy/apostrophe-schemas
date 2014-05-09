@@ -500,6 +500,8 @@ function ApostropheSchemas(options, callback) {
   // joined with locations, assuming that _events is defined as a join in the
   // schema and _locations is defined as a join in the schema for the events
   // module. Multiple "dot notation" joins may share a prefix.
+  //
+  // Joins are also supported in the schemas of array fields.
 
   self.join = function(req, schema, objectOrArray, withJoins, callback) {
     if (arguments.length === 3) {
@@ -517,22 +519,44 @@ function ApostropheSchemas(options, callback) {
       // Don't waste effort
       return callback(null);
     }
-    // Only interested in joins
-    var joins = _.filter(schema, function(field) {
-      return !!self.joinrs[field.type];
-    });
-    if (objects.length > 1) {
-      // Only interested in joins that are not restricted by ifOnlyOne.
-      // This mechanism saves time and memory in cases where you don't need
-      // the results of the join in index views
-      joins = _.filter(joins, function(join) {
-        return !join.ifOnlyOne;
+
+    // build an array of joins of interest, found at any level
+    // in the schema, even those nested in array schemas. Add
+    // an _arrays property to each one which contains the names
+    // of the array fields leading to this join, if any, so
+    // we know where to store the results. Also set a
+    // _dotPath property which can be used to identify relevant
+    // joins when the withJoins option is present
+
+    var joins = [];
+
+    function findJoins(schema, arrays) {
+      var _joins = _.filter(schema, function(field) {
+        return !!self.joinrs[field.type];
+      });
+      _.each(_joins, function(join) {
+        // If we have more than one object we're not interested in joins
+        // with the ifOnlyOne restriction right now.
+        if ((objects.length > 1) && join.ifOnlyOne) {
+          return;
+        }
+        join._arrays = _.clone(arrays);
+        join._dotPath = arrays.join('.') + '.' + join.name;
+      });
+      joins = joins.concat(_joins);
+      _.each(schema, function(field) {
+        if (field.type === 'array') {
+          findJoins(field.schema, arrays.concat(field.name));
+        }
       });
     }
+
+    findJoins(schema, []);
+
     // The withJoins option allows restriction of joins. Set to false
     // it blocks all joins. Set to an array, it allows the joins named within.
-    // If some of those names use dot notation, a chain of nested joins to be
-    // permitted can be specified.
+    // Dot notation can be used to specify joins in array properties,
+    // or joins reached via other joins.
     //
     // By default, all configured joins will take place, but withJoins: false
     // will be passed when fetching the objects on the other end of the join,
@@ -542,16 +566,17 @@ function ApostropheSchemas(options, callback) {
     // Explicit withJoins option passed to us
     if (Array.isArray(withJoins)) {
       joins = _.filter(joins, function(join) {
+        var dotPath = join._dotPath;
         var winner;
         _.each(withJoins, function(withJoinName) {
-          if (withJoinName === join.name) {
+          if (withJoinName === dotPath) {
             winner = true;
           }
-          if (withJoinName.substr(0, join.name.length + 1) === (join.name + '.')) {
-            if (!withJoinsNext[join.name]) {
-              withJoinsNext[join.name] = [];
+          if (withJoinName.substr(0, dotPath + 1) === (dotPath + '.')) {
+            if (!withJoinsNext[dotPath]) {
+              withJoinsNext[dotPath] = [];
             }
-            withJoinsNext[join.name].push(withJoinName.substr(join.name.length + 1));
+            withJoinsNext[dotPath].push(withJoinName.substr(dotPath.length + 1));
             winner = true;
           }
         });
@@ -563,13 +588,29 @@ function ApostropheSchemas(options, callback) {
       // have configured for those
       _.each(joins, function(join) {
         if (join.withJoins) {
-          withJoinsNext[join.name] = join.withJoins;
+          withJoinsNext[join._dotPath] = join.withJoins;
         }
       });
     }
     return async.eachSeries(joins, function(join, callback) {
+      var arrays = join._arrays;
+
+      function findObjectsInArrays(objects, arrays) {
+        if (!arrays.length) {
+          return objects;
+        }
+        var array = arrays[0];
+        var _objects = [];
+        _.each(objects, function(object) {
+          _objects = _objects.concat(object[array] || []);
+        });
+        return findObjectsInArrays(_objects, arrays.slice(1));
+      }
+
+      _objects = findObjectsInArrays(objects, arrays);
+
       if (!join.name.match(/^_/)) {
-        console.error('WARNING: joins should always be given names beginning with an underscore (_). Otherwise you will waste space in your database storing the results');
+        return callback(new Error('Joins should always be given names beginning with an underscore (_). Otherwise we would waste space in your database storing the results statically. There would also be a conflict with the array field withJoins syntax. Join name is: ' + join._dotPath));
       }
       var manager = self._pages.getManager(join.withType);
       if (!manager) {
@@ -586,8 +627,7 @@ function ApostropheSchemas(options, callback) {
           getter = manager.getIndexes;
         }
       } else {
-        // Simple manager for a page type. If it has a getter, use it,
-        // otherwise supply one
+        // If it has a getter, use it, otherwise supply one
         getter = manager.get || function(req, _criteria, filters, callback) {
           var criteria = {
             $and: [
@@ -606,7 +646,7 @@ function ApostropheSchemas(options, callback) {
         // instance type matches, use .get, otherwise use .getIndexes
         get: getter,
         getOptions: {
-          withJoins: withJoinsNext[join.name] || false,
+          withJoins: withJoinsNext[join._dotPath] || false,
           permalink: true
         }
       };
@@ -614,7 +654,7 @@ function ApostropheSchemas(options, callback) {
       // Allow options to the getter to be specified in the schema,
       // notably editable: true
       _.extend(options.getOptions, join.getOptions || {});
-      return self.joinrs[join.type](req, join, options, objects, callback);
+      return self.joinrs[join.type](req, join, options, _objects, callback);
     }, function(err) {
       return callback(err);
     });

@@ -221,6 +221,7 @@ function AposSchemas() {
       $field = self.findSafe($el, '[data-name="' + name + '"]');
       // The server will do the work of moving it to the idField as needed
       data[name] = $field.selective('get', { incomplete: true })[0];
+      console.log(data[name]);
       if (field.required && !data[name]) {
         return apos.afterYield(_.partial(callback, 'required'));
       }

@@ -245,7 +245,7 @@ For an area you would write:
 
 Since the area is not a direct property of the page, we can't use the `(page, areaname)` syntax that is typically more convenient.
 
-Areas and thumbnails in arrays cannot be edited "in context" on a page, they must be updated through the schema editor.
+Areas and thumbnails in arrays cannot be edited "in context" on a page, they must be updated through the schema editor. However, check out [schema widgets](https://github.com/punkave/apostrophe-schema-widgets) for a way to add widgets powered by schemas anywhere in the flow of a page.
 
 #### Preventing Autocomplete
 
@@ -426,7 +426,7 @@ Note that the user always edits the relationship on the "owning" side, not the "
   addFields: [
     {
       name: '_events',
-      ...
+      // Details of the join, then...
       withJoins: [ '_promoters' ]
     }
   ]
@@ -442,7 +442,7 @@ You can use "dot notation," just like in MongoDB:
 withJoins: [ '_promoters._assistants' ]
 ```
 
-This will allow events to be joined with their promoters, and promoters to be joiend with their assistants, and there the chain will stop.
+This will allow events to be joined with their promoters, and promoters to be joined with their assistants, and there the chain will stop.
 
 You can specify more than one join to allow, and they may share a prefix:
 
@@ -450,7 +450,27 @@ You can specify more than one join to allow, and they may share a prefix:
 withJoins: [ '_promoters._assistants', '_promoters._bouncers' ]
 ```
 
-Remember, each of these joins must be present in the configuration for the appropriate module.
+Remember, each of these later joins must actually be present in the configuration for the module in question. That is, "promoters" must have a join called "_assistants" defined in its schema.
+
+##### Nested Joins and Arrays
+
+Joins are allowed in the schema of an [array field](#arrays-in-schemas), and they work exactly as you would expect. Just include joins in the schema for the array as you normally would.
+
+And if you are carrying out a nested join with the `withJoins` option, you'll just need to refer to the join correctly.
+
+Let's say that each promoter has an array of ads, and each ad is joined to a media outlet. We're joing with events, which are joined to promoters, and we want to make sure media outlets are included in the results.
+
+So we write:
+
+```javascript
+  addFields: [
+    {
+      name: '_events',
+      // Details of the join, then...
+      withJoins: [ '_promoters.ads._mediaOutlet' ]
+    }
+  ]
+```
 
 #### Many-To-Many Joins
 
@@ -528,7 +548,7 @@ Now we can access the `._books` property for any story. But users still must sel
 
 What if each story comes with an author's note that is specific to each book? That's not a property of the book, or the story. It's a property of *the relationship between the book and the story*.
 
-If the author's note for every each appearance of each story has to be super-fancy, with rich text and images, then you should make a new module that subclasses snippets in its own right and just join both books and stories to that new module.
+If the author's note for every each appearance of each story has to be super-fancy, with rich text and images, then you should make a new module that subclasses snippets in its own right and just join both books and stories to that new module. You can also use [array fields](#arrays-in-schemas) in creative ways to address that problem.
 
 But if the relationship just has a few simple attributes, there is an easier way:
 
