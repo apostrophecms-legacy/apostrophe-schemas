@@ -406,9 +406,7 @@ function AposSchemas() {
         $move.on('click', function() {
           if ($(this).attr('data-move-item') === 'up') {
             $element.prev().before($element);
-            console.log('up');
           } else {
-            console.log('move down');
             $element.next().after($element);
           }
           return false;
