@@ -322,7 +322,7 @@ function ApostropheSchemas(options, callback) {
   };
 
   self.converters.form.joinByOne = function(req, data, name, snippet, field, callback) {
-    snippet[field.idField] = self._apos.sanitizeId(data[name]);
+    snippet[field.idField] = self._apos.sanitizeId(data[field.idField]);
     return setImmediate(callback);
   };
 
@@ -332,53 +332,30 @@ function ApostropheSchemas(options, callback) {
   };
 
   self.converters.form.joinByArray = function(req, data, name, snippet, field, callback) {
-    var input = data[name] || [];
-    if (!Array.isArray(input)) {
-      input = [];
-    }
-    snippet[field.idsField] = [];
-    if (field.extras) {
-      snippet[field.extrasField] = {};
-    }
+    snippet[field.idsField] = self._apos.sanitizeIds(data[field.idsField]);
 
-    // Clear old values before we sanitize new, so we don't get orphans
-    if (field.relationshipsField) {
-      snippet[field.relationshipsField] = {};
-    }
-    // Each element may be an id or an object with a 'value' property
-    // containing the id as well as optional extra properties
-    _.each(input, function(e) {
-      var id;
-      if (typeof(e) === 'object') {
-        id = e.value;
-      } else {
-        id = e;
+    snippet[field.relationshipField] = {};
+
+    _.each(snippet[field.idsField], function(id) {
+      var e = data[field.relationshipField] && data[field.relationshipField][id];
+      if (!e) {
+        e = {};
       }
-      id = self._apos.sanitizeId(id);
-      if (id !== undefined) {
-        snippet[field.idsField].push(id);
-        if (field.relationship) {
-          if (typeof(e) !== 'object') {
-            // Behave reasonably if we got just ids instead of objects
-            e = {};
-          }
-          // Validate the relationship (aw)
-          var validatedRelationship = {};
-          _.each(field.relationship, function(attr) {
-            if (attr.type === 'string') {
-              validatedRelationship[attr.name] = self._apos.sanitizeString(e[attr.name]);
-            } else if (attr.type === 'boolean') {
-              validatedRelationship[attr.name] = self._apos.sanitizeBoolean(e[attr.name]);
-            } else if (attr.type === 'select') {
+      // Validate the relationship (aw)
+      var validatedRelationship = {};
+      _.each(field.relationship, function(attr) {
+        if (attr.type === 'string') {
+          validatedRelationship[attr.name] = self._apos.sanitizeString(e[attr.name]);
+        } else if (attr.type === 'boolean') {
+          validatedRelationship[attr.name] = self._apos.sanitizeBoolean(e[attr.name]);
+        } else if (attr.type === 'select') {
 
-              validatedRelationship[attr.name] = self._apos.sanitizeSelect(e[attr.name], attr.choices);
-            } else {
-              console.log(snippet.name + ': unknown type for attr attribute of relationship ' + name + ', ignoring');
-            }
-          });
-          snippet[field.relationshipsField][id] = validatedRelationship;
+          validatedRelationship[attr.name] = self._apos.sanitizeSelect(e[attr.name], attr.choices);
+        } else {
+          console.log(snippet.name + ': unknown type for attr attribute of relationship ' + name + ', ignoring');
         }
-      }
+      });
+      snippet[field.relationshipField][id] = validatedRelationship;
     });
     return setImmediate(callback);
   };

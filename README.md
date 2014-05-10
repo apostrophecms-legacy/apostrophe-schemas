@@ -388,6 +388,18 @@ The id of the map location actually "lives" in the `location_id` property of eac
 
 Currently after the user has selected one item they see a message reading "Limit Reached!" We realize this may not be the best way of indicating that a selection has already been made. So you may pass a `limitText` option with an alternative message to be displayed at this point.
 
+##### Joining With "Regular Pages"
+
+What if you want to allow the user to pick anything at all, as long as it's a "regular page" in the page tree with its own permanent URL?
+
+Just use:
+
+```javascript
+withType: 'page'
+```
+
+This special case allows you to easily build navigation menus and the like using [schema widgets](https://github.com/punkave/apostrophe-schema-widgets) and [array fields](#arrays-in-schemas).
+
 ##### Reverse Joins
 
 You can also join back in the other direction:
@@ -548,7 +560,7 @@ Now we can access the `._books` property for any story. But users still must sel
 
 What if each story comes with an author's note that is specific to each book? That's not a property of the book, or the story. It's a property of *the relationship between the book and the story*.
 
-If the author's note for every each appearance of each story has to be super-fancy, with rich text and images, then you should make a new module that subclasses snippets in its own right and just join both books and stories to that new module. You can also use [array fields](#arrays-in-schemas) in creative ways to address that problem.
+If the author's note for every each appearance of each story has to be super-fancy, with rich text and images, then you should make a new module that subclasses snippets in its own right and just join both books and stories to that new module. You can also use [array fields](#arrays-in-schemas) in creative ways to address this problem, using `joinByOne` as one of the fields of the schema in the array.
 
 But if the relationship just has a few simple attributes, there is an easier way:
 

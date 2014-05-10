@@ -219,9 +219,7 @@ function AposSchemas() {
     joinByOne: function(data, name, $field, $el, field, callback) {
       // Fix $field since we can't use the regular name attribute here
       $field = self.findSafe($el, '[data-name="' + name + '"]');
-      // The server will do the work of moving it to the idField as needed
-      data[name] = $field.selective('get', { incomplete: true })[0];
-      console.log(data[name]);
+      data[field.idField] = $field.selective('get', { incomplete: true })[0];
       if (field.required && !data[name]) {
         return apos.afterYield(_.partial(callback, 'required'));
       }
@@ -234,10 +232,19 @@ function AposSchemas() {
     joinByArray: function(data, name, $field, $el, field, callback) {
       // Fix $field since we can't use the regular name attribute here
       $field = self.findSafe($el, '[data-name="' + name + '"]');
-      // The server will do the work of processing it all into
-      // the relationshipsField and idsField separately for us if needed
-      data[name] = $field.selective('get', { incomplete: true });
-      if (field.required && !data[name].length) {
+      var info = $field.selective('get', { incomplete: true });
+      if (field.relationshipField) {
+        data[field.idsField] = _.pluck(info, 'value');
+        data[field.relationshipField] = {};
+        var relationship = {};
+        _.each(info, function(e) {
+          relationship[e.value] = _.omit(e, [ 'value', 'label' ]);
+        });
+        data[field.relationshipField] = relationship;
+      } else {
+        data[field.idsField] = info;
+      }
+      if (field.required && !data[field.idsField].length) {
         return apos.afterYield(function() {
           return apos.afterYield(_.partial(callback, 'required'));
         });
@@ -450,7 +457,10 @@ function AposSchemas() {
       if ((!data._id) && field.def) {
         $field.val(field.def);
       } else {
-        $field.val(data[name]);
+        // Always select the first item if no item is selected.
+        // This is consistent with what most browsers do and works around
+        // an issue with lister
+        $field.val(((data[name] === undefined) && field.choices[0]) ? field.choices[0].value : data[name]);
       }
       return apos.afterYield(callback);
     },
@@ -486,6 +496,8 @@ function AposSchemas() {
         autocomplete = manager._action + '/autocomplete';
       }
       $field.selective({ limit: 1, data: selectiveData, source: autocomplete });
+
+      self.enhanceSelectiveWithSlugs($field);
       return apos.afterYield(callback);
     },
     joinByOneReverse: function(data, name, $field, $el, field, callback) {
@@ -499,25 +511,7 @@ function AposSchemas() {
         apos.log('Error: your new.html template for the ' + self.name + ' module does not have a snippetSelective call for the ' + name + ' join yet');
       }
       var selectiveData = [];
-      _.each(data[field.name] || [], function(friend) {
-        var datum = {};
-        if (field.relationshipsField) {
-          $.extend(true, datum, friend.relationship);
-          // Fix booleans to match the select element's options
-          _.each(field.relationship, function(relField) {
-            if (relField.type === 'boolean') {
-              datum[relField.name] = datum[relField.name] ? '1' : '0';
-            }
-          });
-          // Present these as jQuery Selective expects us to
-          datum.label = friend.item.title;
-          datum.value = friend.item._id;
-        } else {
-          datum.label = friend.title;
-          datum.value = friend._id;
-        }
-        selectiveData.push(datum);
-      });
+
       // For now this is still correct on the browser side, getManager
       // always returns undefined for an index type
       var manager = aposPages.getManager(field.withType);
@@ -525,7 +519,37 @@ function AposSchemas() {
       if (manager) {
         autocomplete = manager._action + '/autocomplete';
       }
-      $field.selective({ preventDuplicates: true, sortable: field.sortable, extras: !!field.relationship, data: selectiveData, source: autocomplete });
+
+      // The server knows the title of the joined things, while we know
+      // about our relationship properties. Solve the puzzle by
+      // passing selective plain old IDs, causing it to call back to its
+      // source for the corresponding labels. Provide a custom source
+      // that queries the server and then merges in the relationship fields.
+      if (field.relationshipField) {
+        var url = autocomplete;
+        autocomplete = function(req, callback) {
+          $.getJSON(url, req, function(results) {
+            // This gives us "label" and "value", add the
+            // relationship info and invoke the original callback
+            _.each(results, function(result) {
+              var relationship = data[field.relationshipField][result.value];
+              if (relationship) {
+                _.extend(result, relationship);
+                _.each(field.relationship, function(relField) {
+                  if (relField.type === 'boolean') {
+                    // Fix booleans to work as select elements expect
+                    result[relField.name] = result[relField.name] ? '1' : '0';
+                  }
+                });
+              }
+            });
+            return callback(results);
+          });
+        };
+      }
+
+      $field.selective({ preventDuplicates: true, sortable: field.sortable, extras: !!field.relationship, data: data[field.idsField] || [], source: autocomplete });
+      self.enhanceSelectiveWithSlugs($field);
       return apos.afterYield(callback);
     },
     joinByArrayReverse: function(data, name, $field, $el, field, callback) {
@@ -610,6 +634,24 @@ function AposSchemas() {
   self.findField = function($el, name) {
     $fieldset = self.findFieldset($el, name);
     return self.findSafe($fieldset, '[name="' + name + '"]');
+  };
+
+  self.enhanceSelectiveWithSlugs = function($field) {
+    // Change the presentation to include the slug.
+    // Based on: http://jqueryui.com/autocomplete/#custom-data
+    // I stuck with that markup with a minimum of new markup to
+    // allow styling. -Tom
+    var $autocomplete = self.findSafe($field, "[data-autocomplete]");
+    $autocomplete.data( "ui-autocomplete" )._renderItem = function(ul, item) {
+      var inner = '<a><div class="apos-autocomplete-label">' + item.label + '</div>';
+      if (item.slug) {
+        inner += '<div class="apos-autocomplete-slug">' + item.slug + '</div>';
+      }
+      inner += '</a>';
+      return $('<li class="apos-autocomplete-item">')
+        .append(inner)
+        .appendTo(ul);
+    };
   };
 }
 
