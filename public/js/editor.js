@@ -298,6 +298,21 @@ function AposSchemas() {
       }
       return apos.afterYield(callback);
     },
+    checkboxes: function(data, name, $field, $el, field, callback) {
+      var values = [];
+      for (var c in field.choices) {
+        var val = field.choices[c].value;
+        var checked = $field.filter('[value="'+val+'"]').prop('checked');
+        if (checked) {
+          values.push(val);
+        }
+      }
+      data[name] = values;
+      if (field.required && !data[name]) {
+        return apos.afterYield(_.partial(callback, 'required'));
+      }
+      return apos.afterYield(callback);
+    },
     select: function(data, name, $field, $el, field, callback) {
       data[name] = $field.val();
       if (field.required && !data[name].length) {
@@ -440,6 +455,12 @@ function AposSchemas() {
     },
     url: function(data, name, $field, $el, field, callback) {
       $field.val(data[name]);
+      return apos.afterYield(callback);
+    },
+    checkboxes: function(data, name, $field, $el, field, callback) {
+      for(var c in data[name]) {
+        $el.find('input[name="'+name+'"][value="'+data[name][c]+'"]').prop('checked', true);
+      }
       return apos.afterYield(callback);
     },
     select: function(data, name, $field, $el, field, callback) {

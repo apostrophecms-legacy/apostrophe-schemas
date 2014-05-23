@@ -234,6 +234,20 @@ function ApostropheSchemas(options, callback) {
       snippet[name] = self._apos.sanitizeBoolean(data[name], field.def);
       return setImmediate(callback);
     },
+    checkboxes: function(req, data, name, object, field, callback) {
+        data[name] = self._apos.sanitizeString(data[name]).split(',');
+
+        if (!typeof(data[name]) == 'array') {
+          object[name] = [];
+          return setImmediate(callback);
+        }
+
+        object[name] = _.filter(data[name], function(choice) {
+          return _.contains(_.pluck(field.choices, 'value'), choice);
+        });
+
+        return setImmediate(callback);
+    },
     select: function(req, data, name, snippet, field, callback) {
       snippet[name] = self._apos.sanitizeSelect(data[name], field.choices, field.def);
       return setImmediate(callback);
@@ -349,7 +363,6 @@ function ApostropheSchemas(options, callback) {
         } else if (attr.type === 'boolean') {
           validatedRelationship[attr.name] = self._apos.sanitizeBoolean(e[attr.name]);
         } else if (attr.type === 'select') {
-
           validatedRelationship[attr.name] = self._apos.sanitizeSelect(e[attr.name], attr.choices);
         } else {
           console.log(snippet.name + ': unknown type for attr attribute of relationship ' + name + ', ignoring');
@@ -357,7 +370,7 @@ function ApostropheSchemas(options, callback) {
       });
       snippet[field.relationshipField][id] = validatedRelationship;
     });
-    return setImmediate(callback);
+    return setImmediate(callback)
   };
 
   self.converters.form.joinByArrayReverse = function(req, data, name, snippet, field, callback) {
@@ -367,6 +380,19 @@ function ApostropheSchemas(options, callback) {
 
   self.converters.form.tags = function(req, data, name, snippet, field, callback) {
     snippet[name] = self._apos.sanitizeTags(data[name]);
+    return setImmediate(callback);
+  };
+
+  self.converters.form.checkboxes = function(req, data, name, object, field, callback) {
+    if (!typeof(data[name]) == 'array') {
+      object[name] = [];
+      return setImmediate(callback);
+    }
+
+    object[name] = _.filter(data[name], function(choice) {
+      return _.contains(_.pluck(field.choices, 'value'), choice);
+    });
+
     return setImmediate(callback);
   };
 
@@ -387,6 +413,10 @@ function ApostropheSchemas(options, callback) {
     string: function(value, field, texts) {
       var silent = (field.silent === undefined) ? true : field.silent;
       texts.push({ weight: field.weight || 15, text: value, silent: silent });
+    },
+    checkboxes: function(value, field, texts) {
+      var silent = (field.silent === undefined) ? true : field.silent;
+      texts.push({ weight: field.weight || 15, text: (value || []).join(' '), silent: silent });
     },
     select: function(value, field, texts) {
       var silent = (field.silent === undefined) ? true : field.silent;
