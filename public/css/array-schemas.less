@@ -1,7 +1,7 @@
 .apos-array-item
 {
   position: relative;
-  background-color: lighten(@apos-grey70, 5%);
+  background-color: darken(@apos-grey70, 5%);
   padding: 1em;
   margin-bottom: 1em;
 
@@ -17,7 +17,26 @@
 
   .apos-fieldset-array
   {
-    background-color: lighten(@apos-grey70, 1%);
+    background-color: darken(@apos-grey70, 10%);
     padding: 1em;
+
+    .apos-array-item
+    {
+      background-color: darken(@apos-grey70, 15%);
+    }
+  }
+}
+
+.apos-fieldset-array
+{
+  .apos-fieldset-row
+  {
+    margin: 10px 0;
+
+    label
+    {
+      vertical-align: top;
+      padding: 18px 0 !important;
+    }
   }
 }

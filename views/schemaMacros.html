@@ -93,15 +93,17 @@
 
 {% macro schemaArray(name, label, schema) %}
   <fieldset class="apos-fieldset apos-fieldset-array apos-fieldset-{{ name | css }}"  data-name="{{ name }}">
-    <label>{{ __(label) | e }}</label>
-    {# Cannot be inside the sortable div #}
-    <span class="apos-ui-container">
-      <a href="#" class="apos-control apos-button" data-add>
-        <i class="icon-plus"></i>
-        Add
-      </a>
-    </span>
-    
+    <div class="apos-fieldset-row">
+      <label>{{ __(label) | e }}</label>
+      {# Cannot be inside the sortable div #}
+      <span class="apos-ui-container">
+        <a href="#" class="apos-control apos-button" data-add>
+          <i class="icon-plus"></i>
+          Add
+        </a>
+      </span>
+    </div>
+
     <div data-elements>
       <div data-element class="apos-template apos-array-item">
         <div class="apos-ui-container right">
@@ -118,4 +120,3 @@
 
   </fieldset>
 {% endmacro %}
-
