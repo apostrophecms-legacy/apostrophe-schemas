@@ -237,7 +237,7 @@ function ApostropheSchemas(options, callback) {
     checkboxes: function(req, data, name, object, field, callback) {
         data[name] = self._apos.sanitizeString(data[name]).split(',');
 
-        if (!typeof(data[name]) == 'array') {
+        if (typeof(data[name]) !== 'array') {
           object[name] = [];
           return setImmediate(callback);
         }
@@ -288,7 +288,23 @@ function ApostropheSchemas(options, callback) {
     array: function(req, data, name, snippet, field, callback) {
       // We don't do arrays in CSV, it would be painful to work with
       return setImmediate(callback);
-    }
+    },
+    joinByOne: function(req, data, name, snippet, field, callback) {
+      // We don't yet do joins in CSV
+      return setImmediate(callback);
+    },
+    joinByArray: function(req, data, name, snippet, field, callback) {
+      // We don't yet do joins in CSV
+      return setImmediate(callback);
+    },
+    joinByOneReverse: function(req, data, name, snippet, field, callback) {
+      // We don't yet do joins in CSV
+      return setImmediate(callback);
+    },
+    joinByArrayReverse: function(req, data, name, snippet, field, callback) {
+      // We don't yet do joins in CSV
+      return setImmediate(callback);
+    },
   };
   // As far as the server is concerned a singleton is just an area
   self.converters.csv.singleton = self.converters.csv.area;
