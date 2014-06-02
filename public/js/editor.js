@@ -91,13 +91,13 @@ function AposSchemas() {
     refreshSingleton(items, callback);
 
     function refreshSingleton(items, callback) {
-      options.content = JSON.stringify(items);
-      $.post('/apos/edit-virtual-singleton', options, function(data) {
+      options.content = items;
+      $.jsonCall('/apos/edit-virtual-singleton', { dataType: 'html' }, options, function(data) {
         var $editView = self.findSafe($fieldset, '[data-' + name + '-edit-view]');
         $editView.html('');
         $editView.append(data);
 
-        // getSingletonJSON will pick it up from here
+        // getSingleton will pick it up from here
         $editView.data('items', items);
 
         // If an edit takes place, refresh so we can see the new preview here
@@ -110,7 +110,7 @@ function AposSchemas() {
         $singleton.on('aposEdited', function(e, data) {
           refreshSingleton([data], function() {
             // A change event on the singleton's wrapper signifies
-            // that getSingletonItem and getSingletonJSON can now be
+            // that getSingleton can now be
             // called to see the new data
             $fieldset.trigger('change');
           });
@@ -134,34 +134,28 @@ function AposSchemas() {
       items = area.items;
     }
     var $fieldset = self.findFieldset($el, name);
-    $.post('/apos/edit-virtual-area', { content: JSON.stringify(items), options: JSON.stringify(options) }, function(data) {
+    $.jsonCall('/apos/edit-virtual-area',
+      { dataType: 'html' },
+      { content: items, options: options }, function(data) {
       var $editView = self.findSafe($fieldset, '[data-' + name + '-edit-view]');
       $editView.append(data);
       return callback(null);
     });
   };
 
-  // Access the widget data for a particular singleton
-  self.getSingletonItem = function($el, name) {
+  // Retrieve a JSON-friendly serialization of the singleton
+  self.getSingleton = function($el, name) {
     var $fieldset = self.findFieldset($el, name);
     var items = self.findSafe($fieldset, '[data-' + name + '-edit-view]').data('items');
     items = items || [];
-    return items[0];
+    return items;
   };
 
-  // Retrieve a JSON string to serialize the singleton
-  self.getSingletonJSON = function($el, name) {
-    var $fieldset = self.findFieldset($el, name);
-    var items = self.findSafe($fieldset, '[data-' + name + '-edit-view]').data('items');
-    items = items || [];
-    return JSON.stringify(items);
-  };
-
-  // Retrieve a JSON string to serialize the area
-  self.getAreaJSON = function($el, name) {
+  // Retrieve a JSON-friendly serialization of the area
+  self.getArea = function($el, name) {
     var $fieldset = self.findFieldset($el, name);
     var $property = self.findSafe($fieldset, '[data-' + name + '-edit-view]');
-    return apos.stringifyArea($property.find('.apos-area:first'));
+    return $property.find('.apos-area:first').data('editor').serialize();
   };
 
   // Methods to convert from a form field of each schema type
@@ -172,18 +166,20 @@ function AposSchemas() {
   self.converters = {
     // Convert the tough cases
     area: function(data, name, $field, $el, field, callback) {
-      data[name] = self.getAreaJSON($el, name);
-      // TODO: this is very lazy and doesn't bother to look for things
-      // like widgets with nothing in them. We should think seriously about
-      // server side validation at this point.
-      if (field.required && ((data[name] === '[]') || (data[name] === '[{"type":"richText","content":""}]'))) {
+      data[name] = self.getArea($el, name);
+      console.log('area data is:');
+      console.log(data[name]);
+
+      if (field.required && (apos.areaIsEmpty(data[name]))) {
         return apos.afterYield(_.partial(callback, 'required'));
       }
       return apos.afterYield(callback);
     },
     singleton: function(data, name, $field, $el, field, callback) {
-      data[name] = self.getSingletonJSON($el, name);
-      if (field.required && ((data[name] === '[]') || (data[name] === '[{"type":"richText","content":""}]'))) {
+      data[name] = self.getSingleton($el, name);
+      console.log('singleton data is:');
+      console.log(data[name]);
+      if (field.required && (apos.singletonIsEmpty(data[name], field.type))) {
         return apos.afterYield(_.partial(callback, 'required'));
       }
       return apos.afterYield(callback);

@@ -315,7 +315,10 @@ function ApostropheSchemas(options, callback) {
   self.converters.form.singleton = self.converters.form.area = function(req, data, name, snippet, field, callback) {
     var content = [];
     try {
-      content = JSON.parse(data[name]);
+      // If this is a full-fledged area object with a type property,
+      // we're interested in the items property. For bc, if it's just an array,
+      // assume it is already an array of items.
+      content = (data[name].type === 'area') ? data[name].items : data[name];
     } catch (e) {
       // Always recover graciously and import something reasonable, like an empty area
     }
