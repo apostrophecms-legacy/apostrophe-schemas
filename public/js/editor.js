@@ -167,8 +167,6 @@ function AposSchemas() {
     // Convert the tough cases
     area: function(data, name, $field, $el, field, callback) {
       data[name] = self.getArea($el, name);
-      console.log('area data is:');
-      console.log(data[name]);
 
       if (field.required && (apos.areaIsEmpty(data[name]))) {
         return apos.afterYield(_.partial(callback, 'required'));
@@ -177,8 +175,6 @@ function AposSchemas() {
     },
     singleton: function(data, name, $field, $el, field, callback) {
       data[name] = self.getSingleton($el, name);
-      console.log('singleton data is:');
-      console.log(data[name]);
       if (field.required && (apos.singletonIsEmpty(data[name], field.type))) {
         return apos.afterYield(_.partial(callback, 'required'));
       }
