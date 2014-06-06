@@ -289,20 +289,62 @@ function ApostropheSchemas(options, callback) {
       // We don't do arrays in CSV, it would be painful to work with
       return setImmediate(callback);
     },
+    // Support for one-to-one joins in CSV imports,
+    // by title or id of item joined with. Title match
+    // is tolerant
     joinByOne: function(req, data, name, snippet, field, callback) {
-      // We don't yet do joins in CSV
-      return setImmediate(callback);
+      var manager = self._pages.getManager(field.withType);
+      if (!manager) {
+        return callback(new Error('join with type ' + field.withType + ' unrecognized'));
+      }
+      var titleOrId = self._apos.sanitizeString(data[name]);
+      var criteria = { $or: [ { sortTitle: self._apos.sortify(titleOrId) }, { _id: titleOrId } ] };
+      return manager.get(req, criteria, { fields: { _id: 1 } }, function(err, results) {
+        if (err) {
+          return callback(err);
+        }
+        results = results.pages || results.snippets;
+        if (!results.length) {
+          return callback(null);
+        }
+        snippet[field.idField] = results[0]._id;
+        return callback(null);
+      });
     },
+    // Support for array joins in CSV imports,
+    // by title or id of items joined with, in a comma-separated
+    // list. Title match is tolerant, but you must NOT supply any
+    // commas that may appear in the titles of the individual items,
+    // since commas are reserved for separating items in the list
     joinByArray: function(req, data, name, snippet, field, callback) {
-      // We don't yet do joins in CSV
-      return setImmediate(callback);
+      var manager = self._pages.getManager(field.withType);
+      if (!manager) {
+        return callback(new Error('join with type ' + field.withType + ' unrecognized'));
+      }
+      var titlesOrIds = self._apos.sanitizeString(data[name]).split(/\s*,\s*/);
+      if ((!titlesOrIds) || (titlesOrIds[0] === undefined)) {
+        return setImmediate(callback);
+      }
+      var clauses = [];
+      _.each(titlesOrIds, function(titleOrId) {
+        clauses.push({ sortTitle: self._apos.sortify(titleOrId) });
+        clauses.push({ _id: titleOrId });
+      });
+      return manager.get(req, { $or: clauses }, { fields: { _id: 1 }, withJoins: false }, function(err, results) {
+        if (err) {
+          return callback(err);
+        }
+        results = results.pages || results.snippets;
+        snippet[field.idsField] = _.pluck(results, '_id');
+        return callback(null);
+      });
     },
     joinByOneReverse: function(req, data, name, snippet, field, callback) {
-      // We don't yet do joins in CSV
+      // Importable as part of the *other* type
       return setImmediate(callback);
     },
     joinByArrayReverse: function(req, data, name, snippet, field, callback) {
-      // We don't yet do joins in CSV
+      // Importable as part of the *other* type
       return setImmediate(callback);
     },
   };
@@ -389,7 +431,7 @@ function ApostropheSchemas(options, callback) {
       });
       snippet[field.relationshipField][id] = validatedRelationship;
     });
-    return setImmediate(callback)
+    return setImmediate(callback);
   };
 
   self.converters.form.joinByArrayReverse = function(req, data, name, snippet, field, callback) {
