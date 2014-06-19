@@ -96,6 +96,8 @@ function AposSchemas() {
         var $editView = self.findSafe($fieldset, '[data-' + name + '-edit-view]');
         $editView.html('');
         $editView.append(data);
+        // Make sure slideshows, videos, etc. get their JS
+        apos.enablePlayers($editView);
 
         // getSingleton will pick it up from here
         $editView.data('items', items);
