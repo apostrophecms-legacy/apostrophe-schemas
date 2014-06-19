@@ -183,6 +183,22 @@ function ApostropheSchemas(options, callback) {
       if (_password.length) {
         snippet[name] = self._apos.hashPassword(data.password);
       }
+    },
+    joinByOne: function(data, name, snippet, field) {
+      // No joins in CSV in 0.4, but don't crash just because
+      // the schema has a join in it
+    },
+    joinByArray: function(data, name, snippet, field) {
+      // No joins in CSV in 0.4, but don't crash just because
+      // the schema has a join in it
+    },
+    joinByOneReverse: function(data, name, snippet, field) {
+      // No joins in CSV in 0.4, but don't crash just because
+      // the schema has a join in it
+    },
+    joinByArrayReverse: function(data, name, snippet, field) {
+      // No joins in CSV in 0.4, but don't crash just because
+      // the schema has a join in it
     }
   };
   // As far as the server is concerned a singleton is just an area
