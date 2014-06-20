@@ -148,7 +148,11 @@ function ApostropheSchemas(options, callback) {
           if (field) {
             field.group = group.name;
           } else {
-            throw new Error('Nonexistent field ' + name + ' referenced by groups option in schemas.compose');
+            // Tolerate nonexistent fields in groupFields. This
+            // will happen if a subclass uses removeFields and
+            // doesn't set up a new groupFields option, which
+            // is reasonable
+            return;
           }
         });
       });
