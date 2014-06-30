@@ -608,13 +608,13 @@ function ApostropheSchemas(options, callback) {
         return !!self.joinrs[field.type];
       });
       _.each(_joins, function(join) {
+        join._dotPath = arrays.join('.') + '.' + join.name;
         // If we have more than one object we're not interested in joins
         // with the ifOnlyOne restriction right now.
         if ((objects.length > 1) && join.ifOnlyOne) {
           return;
         }
         join._arrays = _.clone(arrays);
-        join._dotPath = arrays.join('.') + '.' + join.name;
       });
       joins = joins.concat(_joins);
       _.each(schema, function(field) {
@@ -669,6 +669,9 @@ function ApostropheSchemas(options, callback) {
       var arrays = join._arrays;
 
       function findObjectsInArrays(objects, arrays) {
+        if (!arrays) {
+          return [];
+        }
         if (!arrays.length) {
           return objects;
         }
