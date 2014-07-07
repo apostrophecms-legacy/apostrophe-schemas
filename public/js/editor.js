@@ -547,7 +547,7 @@ function AposSchemas() {
             // This gives us "label" and "value", add the
             // relationship info and invoke the original callback
             _.each(results, function(result) {
-              var relationship = data[field.relationshipField][result.value];
+              var relationship = data[field.relationshipField] && data[field.relationshipField][result.value];
               if (relationship) {
                 _.extend(result, relationship);
                 _.each(field.relationship, function(relField) {
