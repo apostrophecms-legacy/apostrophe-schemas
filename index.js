@@ -387,6 +387,7 @@ function ApostropheSchemas(options, callback) {
     var results = [];
     return async.eachSeries(data, function(datum, callback) {
       var result = {};
+      result.id = self._apos.sanitizeId(datum.id) || self._apos.generateId();
       return self.convertFields(req, schema, 'form', datum, result, function(err) {
         if (err) {
           return callback(err);
