@@ -40,7 +40,7 @@ function AposSchemas() {
   // Gather data from form elements and push it into properties of the data object,
   // as specified by the schema provided. The inverse of self.populateSomeFields
   self.convertFields = function($el, schema, data, callback) {
-    self.findSafe($el, '[data-name]').removeClass('apos-error');
+    self.findSafe($el, '[data-name]').removeClass('apos-error').find('.apos-error-message').remove();
     var failing;
 
     // async for loop
@@ -61,7 +61,7 @@ function AposSchemas() {
       }
       return self.converters[field.type](data, field.name, $field, $el, field, function(err) {
         if (err) {
-          self.addError($el, field.name);
+          self.addError($el, field.name, field.required);
           failing = field;
         }
         i++;
@@ -600,8 +600,11 @@ function AposSchemas() {
   // A convenience method for calling attention to errors in fields in your own
   // independent validation code.
 
-  self.addError = function($el, name) {
+  self.addError = function($el, name, required) {
     self.findSafe($el, '[data-name="' + name + '"]').addClass('apos-error');
+    if (required == true) {
+      self.findSafe($el, '[data-name="' + name + '"]').find('label').append('<span class="apos-error-message"> * required</span>');
+    }
   };
 
   // A convenience allowing you to scroll to the first error present,
