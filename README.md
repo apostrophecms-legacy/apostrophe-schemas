@@ -245,7 +245,7 @@ For an area you would write:
 
 Since the area is not a direct property of the page, we can't use the `(page, areaname)` syntax that is typically more convenient.
 
-Areas and thumbnails in arrays cannot be edited "in context" on a page, they must be updated through the schema editor. However, check out [schema widgets](https://github.com/punkave/apostrophe-schema-widgets) for a way to add widgets powered by schemas anywhere in the flow of a page.
+Areas and thumbnails in arrays **can** be edited "in context" on a page.
 
 #### Preventing Autocomplete
 
