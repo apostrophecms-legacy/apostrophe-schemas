@@ -445,12 +445,22 @@ function ApostropheSchemas(options, callback) {
   };
 
   self.converters.form.tags = function(req, data, name, snippet, field, callback) {
-    snippet[name] = self._apos.sanitizeTags(data[name]);
-    return setImmediate(callback);
+    var tags = self._apos.sanitizeTags(data[name]);
+    if (!self._apos.options.lockTags) {
+      snippet[field.name] = tags;
+      return setImmediate(callback);
+    }
+    return self._apos.getTags({ tags: tags }, function(err, tags) {
+      if (err) {
+        return callback(err);
+      }
+      snippet[field.name] = tags;
+      return callback(null);
+    });
   };
 
   self.converters.form.checkboxes = function(req, data, name, object, field, callback) {
-    if (!typeof(data[name]) == 'array') {
+    if (typeof(data[name]) != 'array') {
       object[name] = [];
       return setImmediate(callback);
     }
