@@ -198,6 +198,7 @@ function AposSchemas() {
         }
         var result = {};
         var $element = $($elements[i]);
+        result.id = $element.attr('data-id');
         return self.convertFields($element, field.schema, result, function(_err) {
           if (_err) {
             err = _err;
@@ -380,6 +381,8 @@ function AposSchemas() {
         $element.removeClass('apos-template');
         addRemoveHandler($element);
         addMoveHandler($element);
+
+        $element.attr('data-id', data[i].id);
 
         $elements.append($element);
         return self.populateFields($element, field.schema, data[i], function() {
