@@ -414,10 +414,10 @@ function ApostropheSchemas(options, callback) {
   self.converters.form.joinByArray = function(req, data, name, snippet, field, callback) {
     snippet[field.idsField] = self._apos.sanitizeIds(data[field.idsField]);
 
-    snippet[field.relationshipField] = {};
+    snippet[field.relationshipsField] = {};
 
     _.each(snippet[field.idsField], function(id) {
-      var e = data[field.relationshipField] && data[field.relationshipField][id];
+      var e = data[field.relationshipsField] && data[field.relationshipsField][id];
       if (!e) {
         e = {};
       }
@@ -434,7 +434,7 @@ function ApostropheSchemas(options, callback) {
           console.log(snippet.name + ': unknown type for attr attribute of relationship ' + name + ', ignoring');
         }
       });
-      snippet[field.relationshipField][id] = validatedRelationship;
+      snippet[field.relationshipsField][id] = validatedRelationship;
     });
     return setImmediate(callback);
   };
