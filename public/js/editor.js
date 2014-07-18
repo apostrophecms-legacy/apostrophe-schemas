@@ -22,15 +22,18 @@ function AposSchemas() {
       // http://stackoverflow.com/questions/18770369/how-to-set-html5-required-attribute-in-javascript
       // for why I do it this way.
 
-      if (field.required && $field[0]) {
-        $field[0].required = true;
-      }
+      // if (field.required && $field[0]) {
+      //   $field[0].required = true;
+      // }
 
       // This is a hack to implement async.eachSeries. TODO: think about putting
       // the async module in the browser
       return self.displayers[field.type](snippet, field.name, $field, $el, field, function() {
         if (field.autocomplete === false) {
           $field.attr('autocomplete', 'off');
+        }
+        if(field.required === true) {
+          self.addError($el, field.name, field.required);
         }
         return populateField(i + 1);
       });
@@ -728,6 +731,16 @@ function AposSchemas() {
         .append(inner)
         .appendTo(ul);
     };
+  };
+
+  self.newInstance = function(schema) {
+    var def = {};
+    _.each(schema, function(field) {
+      if (field.def !== undefined) {
+        def[field.name] = field.def;
+      }
+    });
+    return def;
   };
 }
 
