@@ -31,6 +31,9 @@ function AposSchemas() {
         if (field.autocomplete === false) {
           $field.attr('autocomplete', 'off');
         }
+        if(field.required === true) {
+          self.addError($el, field.name, field.required);
+        }
         return populateField(i + 1);
       });
     }
