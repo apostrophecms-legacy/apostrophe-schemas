@@ -21,9 +21,9 @@ function AposSchemas() {
       // http://stackoverflow.com/questions/18770369/how-to-set-html5-required-attribute-in-javascript
       // for why I do it this way.
 
-      if (field.required && $field[0]) {
-        $field[0].required = true;
-      }
+      // if (field.required && $field[0]) {
+      //   $field[0].required = true;
+      // }
 
       // This is a hack to implement async.eachSeries. TODO: think about putting
       // the async module in the browser
@@ -673,6 +673,16 @@ function AposSchemas() {
         .append(inner)
         .appendTo(ul);
     };
+  };
+
+  self.newInstance = function(schema) {
+    var def = {};
+    _.each(schema, function(field) {
+      if (field.def !== undefined) {
+        def[field.name] = field.def;
+      }
+    });
+    return def;
   };
 }
 
