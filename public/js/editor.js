@@ -8,7 +8,8 @@ function AposSchemas() {
     // Think about bringing that into the browser.
     function populateField(i) {
       if (i >= schema.length) {
-        return callback(null);
+        return afterPopulateFields(callback);
+        // return callback(null);
       }
       var field = schema[i];
 
@@ -34,6 +35,60 @@ function AposSchemas() {
         return populateField(i + 1);
       });
     }
+
+    function afterPopulateFields(callback) {
+
+      // This function actually toggles the things based on data-show-fields of options in select
+      function toggleHiddenFields($select){
+        
+        var $hideFieldOptions = $select.find('option:not(:selected)');
+
+        _.each($hideFieldOptions, function(hideFieldOption){
+          var hideFields = $(hideFieldOption).data('show-fields');
+
+          if (hideFields && hideFields.length > 0) {
+            hideFields = hideFields.split(',');
+
+            _.each(hideFields, function(field){
+              var $fieldset = self.findFieldset($el, field);
+              $fieldset.addClass('apos-hidden');
+            });
+          }
+        });
+
+
+        var showFields = $select.find('option:selected').data('show-fields');
+        if (showFields && showFields.length > 0) {
+          showFields = showFields.split(',');
+
+          _.each(showFields, function(field){
+            var $fieldset = self.findFieldset($el, field);
+            $fieldset.removeClass('apos-hidden');
+          });
+        }
+
+       
+      }
+
+      // loop over any (safe) select we've marked for functionality, do initial toggle, add listener
+      _.each(schema, function(field) {
+        if (field.type == 'select') {
+          var $fieldset = self.findFieldset($el, field.name);
+
+          if ($fieldset.hasClass('apos-fieldset-select-show-fields')){
+            var $toggleSelect = self.findSafe($fieldset, 'select');
+            toggleHiddenFields($toggleSelect);
+            $toggleSelect.on('change', function(){
+              toggleHiddenFields($(this));
+            });
+          }
+        }
+      })
+
+      callback(null);
+      
+    }
+
     return populateField(0);
   };
 

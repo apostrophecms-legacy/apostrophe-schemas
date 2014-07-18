@@ -193,6 +193,23 @@ function ApostropheSchemas(options, callback) {
       }
     });
 
+    _.each(schema, function(field) {
+      if (field.type === 'select') {
+        _.each(field.choices, function(choice){
+          if (choice.showFields) {
+            if (!_.isArray(choice.showFields)) {
+              throw new Error('The \'showFields\' property in the choices of a select field needs to be an array.');
+            }
+            _.each(choice.showFields, function(showFieldName){
+              if (!_.find(schema, function(schemaField){ return schemaField.name == showFieldName; })) {
+                console.error('WARNING: The field \'' + showFieldName + '\' does not exist in your schema, but you tried to toggle it\'s display with a select field using showFields. STAAAHHHHPP!');
+              }
+            });
+          }
+        });
+      }
+    });
+
     return schema;
   };
 
