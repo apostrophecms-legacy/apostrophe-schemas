@@ -1,17 +1,11 @@
 function AposSchemas() {
   var self = this;
 
-  // Populate form elements corresponding to a set of fields as specified in a schema
-  // (the schema argument). The inverse of self.convertSomeFields
+  // Populate form elements corresponding to a set of fields as
+  // specified in a schema (the schema argument). The inverse of
+  // self.convertSomeFields
   self.populateFields = function($el, schema, snippet, callback) {
-    // This is a workaround for the lack of async.each client side.
-    // Think about bringing that into the browser.
-    function populateField(i) {
-      if (i >= schema.length) {
-        return callback(null);
-      }
-      var field = schema[i];
-
+    return async.eachSeries(schema, function(field, callback) {
       // Utilized by simple displayers that use a simple HTML
       // element with a name attribute
       var $field = self.findField($el, field.name);
@@ -25,16 +19,20 @@ function AposSchemas() {
         $field[0].required = true;
       }
 
-      // This is a hack to implement async.eachSeries. TODO: think about putting
-      // the async module in the browser
-      return self.displayers[field.type](snippet, field.name, $field, $el, field, function() {
+      if (field.contextual) {
+        return apos.afterYield(callback);
+      }
+
+      var displayer = self.displayers[field.type];
+
+      return displayer(snippet, field.name, $field, $el, field, function() {
         if (field.autocomplete === false) {
           $field.attr('autocomplete', 'off');
         }
-        return populateField(i + 1);
+        return apos.afterYield(callback);
       });
-    }
-    return populateField(0);
+
+    }, callback);
   };
 
   // Gather data from form elements and push it into properties of the data object,
