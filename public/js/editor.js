@@ -6,18 +6,10 @@ function AposSchemas() {
   // self.convertSomeFields
   self.populateFields = function($el, schema, snippet, callback) {
     return async.eachSeries(schema, function(field, callback) {
+
       // Utilized by simple displayers that use a simple HTML
       // element with a name attribute
       var $field = self.findField($el, field.name);
-
-      // If this field maps to a plain HTML element set the
-      // required attribute when appropriate. See:
-      // http://stackoverflow.com/questions/18770369/how-to-set-html5-required-attribute-in-javascript
-      // for why I do it this way.
-
-      if (field.required && $field[0]) {
-        $field[0].required = true;
-      }
 
       if (field.contextual) {
         return apos.afterYield(callback);
@@ -29,10 +21,62 @@ function AposSchemas() {
         if (field.autocomplete === false) {
           $field.attr('autocomplete', 'off');
         }
+        if(field.required === true) {
+          self.addError($el, field.name, true);
+        }
         return apos.afterYield(callback);
       });
 
-    }, callback);
+    }, afterPopulateFields);
+
+    function afterPopulateFields() {
+
+      // This function actually toggles the things based on data-show-fields of options in select
+      function toggleHiddenFields($select){
+
+        var $hideFieldOptions = $select.find('option:not(:selected)');
+
+        _.each($hideFieldOptions, function(hideFieldOption){
+          var hideFields = $(hideFieldOption).data('show-fields');
+
+          if (hideFields && hideFields.length > 0) {
+            hideFields = hideFields.split(',');
+
+            _.each(hideFields, function(field){
+              var $fieldset = self.findFieldset($el, field);
+              $fieldset.addClass('apos-hidden');
+            });
+          }
+        });
+
+        var showFields = $select.find('option:selected').data('show-fields');
+        if (showFields && showFields.length > 0) {
+          showFields = showFields.split(',');
+
+          _.each(showFields, function(field){
+            var $fieldset = self.findFieldset($el, field);
+            $fieldset.removeClass('apos-hidden');
+          });
+        }
+      }
+
+      // loop over any (safe) select we've marked for functionality, do initial toggle, add listener
+      _.each(schema, function(field) {
+        if (field.type == 'select') {
+          var $fieldset = self.findFieldset($el, field.name);
+
+          if ($fieldset.hasClass('apos-fieldset-select-show-fields')){
+            var $toggleSelect = self.findSafe($fieldset, 'select');
+            toggleHiddenFields($toggleSelect);
+            $toggleSelect.on('change', function(){
+              toggleHiddenFields($(this));
+            });
+          }
+        }
+      });
+
+      callback(null);
+    }
   };
 
   // Gather data from form elements and push it into properties of the data object,
@@ -671,6 +715,16 @@ function AposSchemas() {
         .append(inner)
         .appendTo(ul);
     };
+  };
+
+  self.newInstance = function(schema) {
+    var def = {};
+    _.each(schema, function(field) {
+      if (field.def !== undefined) {
+        def[field.name] = field.def;
+      }
+    });
+    return def;
   };
 }
 
