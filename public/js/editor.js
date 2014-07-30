@@ -270,14 +270,14 @@ function AposSchemas() {
       // Fix $field since we can't use the regular name attribute here
       $field = self.findSafe($el, '[data-name="' + name + '"]');
       var info = $field.selective('get', { incomplete: true });
-      if (field.relationshipField) {
+      if (field.relationshipsField) {
         data[field.idsField] = _.pluck(info, 'value');
-        data[field.relationshipField] = {};
+        data[field.relationshipsField] = {};
         var relationship = {};
         _.each(info, function(e) {
           relationship[e.value] = _.omit(e, [ 'value', 'label' ]);
         });
-        data[field.relationshipField] = relationship;
+        data[field.relationshipsField] = relationship;
       } else {
         data[field.idsField] = info;
       }
@@ -585,14 +585,14 @@ function AposSchemas() {
       // passing selective plain old IDs, causing it to call back to its
       // source for the corresponding labels. Provide a custom source
       // that queries the server and then merges in the relationship fields.
-      if (field.relationshipField) {
+      if (field.relationshipsField) {
         var url = autocomplete;
         autocomplete = function(req, callback) {
           $.getJSON(url, req, function(results) {
             // This gives us "label" and "value", add the
             // relationship info and invoke the original callback
             _.each(results, function(result) {
-              var relationship = data[field.relationshipField] && data[field.relationshipField][result.value];
+              var relationship = data[field.relationshipsField] && data[field.relationshipsField][result.value];
               if (relationship) {
                 _.extend(result, relationship);
                 _.each(field.relationship, function(relField) {
