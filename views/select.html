@@ -1,2 +1,7 @@
 {% include "schemaMacros.html" %}
-{{ formSelect(name, label, choices) }}
+
+{% if options.selectMultiple %}
+	{{ formMultiSelect(name, label, choices) }}
+{% else %}
+	{{ formSelect(name, label, choices) }}
+{% endif %}
