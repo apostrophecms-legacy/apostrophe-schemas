@@ -776,16 +776,16 @@ function ApostropheSchemas(options, callback) {
     self.indexers[type.name] = type.indexer;
   };
 
-  // Render a custom field from nunjucks
+  // Render a field from nunjucks
   self._apos.addLocal('aposSchemaField', function(field) {
     // Alow custom renderers for types and for individual fields
     var render = field.render || self.renders[field.type];
     if (!render) {
       // Look for a standard render template in the views folder
       // of this module
-      return self.renderer(field.type)(field);
+      return self.renderer(field.type)(field).trim();
     }
-    return render(field);
+    return render(field).trim();
   });
 
   if (callback) {
