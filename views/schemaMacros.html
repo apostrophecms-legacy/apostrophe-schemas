@@ -1,16 +1,16 @@
-{% include "formMacros.html" %}
+{%- include "formMacros.html" -%}
 
 {# Called for you by schemaFields when a group is encountered. #}
-{% macro schemaOpenGroup(fields, group, active) %}
+{%- macro schemaOpenGroup(fields, group, active) -%}
   <div class="apos-modal-tab {% if active %}apos-active{% endif %}" data-tab-id="{{ group }}">
     <div class="apos-modal-tab-content">
-{% endmacro %}
+{%- endmacro -%}
 
 {# Called for you by schemaFields when a group ends. #}
-{% macro schemaCloseGroup() %}
+{%- macro schemaCloseGroup() -%}
     </div>
   </div>
-{% endmacro %}
+{%- endmacro -%}
 
 {# Output all the fields in a schema. Second argument is optional, contains options. #}
 
@@ -33,69 +33,69 @@
 
 {# Any field types not known to this macro are skipped, without error. #}
 
-{% macro schemaFields(fields, options = { from: false, to: false, except: [], only: false }) %}
-  {% set groups = aposFilter(fields, 'type', 'group') %}
-  {% set firstGroupReached = false %}
-  {% set fromFound = false %}
-  {% set toFound = false %}
-  {% for field in fields %}
-    {% if (not (options.from or options.after)) or (field.name == options.from) %}
-      {% set fromFound = true %}
-    {% endif %}
-    {% if (field.name == options.before) %}
-      {% set toFound = true %}
-    {% endif %}
-    {% set found = fromFound and (not toFound) %}
-    {% set notExcepted = (not aposContains(options.except, field.name)) %}
-    {% set allowed = (not options.only) or aposContains(options.only, field.name) %}
-    {% set notContextual = (not field.contextual) %}
+{%- macro schemaFields(fields, options = { from: false, to: false, except: [], only: false }) -%}
+  {%- set groups = aposFilter(fields, 'type', 'group') -%}
+  {%- set firstGroupReached = false -%}
+  {%- set fromFound = false -%}
+  {%- set toFound = false -%}
+  {%- for field in fields -%}
+    {%- if (not (options.from or options.after)) or (field.name == options.from) -%}
+      {%- set fromFound = true -%}
+    {%- endif -%}
+    {%- if (field.name == options.before) -%}
+      {%- set toFound = true -%}
+    {%- endif -%}
+    {%- set found = fromFound and (not toFound) -%}
+    {%- set notExcepted = (not aposContains(options.except, field.name)) -%}
+    {%- set allowed = (not options.only) or aposContains(options.only, field.name) -%}
+    {%- set notContextual = (not field.contextual) -%}
 
-    {% if (found and notExcepted and allowed and notContextual) %}
-      {% if field.group and (field.group != lastGroup) %}
-        {% if lastGroup %}
+    {%- if (found and notExcepted and allowed and notContextual) -%}
+      {%- if field.group and (field.group != lastGroup) -%}
+        {%- if lastGroup -%}
           {{ schemaCloseGroup() }}
-          {% set activeGroup = false %}
-        {% else %}
-          {% set activeGroup = true %}
+          {%- set activeGroup = false -%}
+        {%- else -%}
+          {%- set activeGroup = true -%}
           {# First grouped control encountered, open the tabs div #}
           <div class="apos-modal-tabs">
             <div class="apos-modal-tab-control">
-              {% for group in groups %}
-                <div class="apos-modal-tab-title {% if loop.first %}apos-active{% endif %}" data-tab="{{ group.name }}"><i class="{{ group.icon }}"></i> {{ group.label }}</div>
-              {% endfor %}
+              {%- for group in groups -%}
+                <div class="apos-modal-tab-title {% if loop.first -%}apos-active{%- endif %}" data-tab="{{ group.name }}"><i class="{{ group.icon }}"></i> {{ group.label }}</div>
+              {%- endfor -%}
             </div>
-        {% endif %}
+        {%- endif -%}
         {{ schemaOpenGroup(fields, field.group, activeGroup) }}
-        {% set lastGroup = field.group %}
-      {% endif %}
+        {%- set lastGroup = field.group -%}
+      {%- endif -%}
       {# Invokes standard templates for each type in
         apostrophe-schemas/templates/views, or custom renderers
         if supplied for the field's type or that individual field #}
       {{ aposSchemaField(field) }}
-      {% if field.help %}
+      {%- if field.help -%}
         <p class="apos-help">{{ field.help | e }}</p>
-      {% endif %}
-    {% endif %}
-    {% if (field.name == options.to) %}
-      {% set toFound = true %}
-    {% endif %}
-    {% if (field.name == options.after) %}
-      {% set fromFound = true %}
-    {% endif %}
-  {% endfor %}
+      {%- endif -%}
+    {%- endif -%}
+    {%- if (field.name == options.to) -%}
+      {%- set toFound = true -%}
+    {%- endif -%}
+    {%- if (field.name == options.after) -%}
+      {%- set fromFound = true -%}
+    {%- endif -%}
+  {%- endfor -%}
   {# Nunjucks won't let us just test lastGroup from here due to #}
   {# scoping issues https://github.com/mozilla/nunjucks/issues/166 #}
-  {% if aposFilterNonempty(fields, 'group').length %}
+  {%- if aposFilterNonempty(fields, 'group').length -%}
     {{ schemaCloseGroup() }}
     </div>
-  {% endif %}
-{% endmacro %}
+  {%- endif -%}
+{%- endmacro -%}
 
-{% macro schemaArray(name, label, schema) %}
+{%- macro schemaArray(name, label, schema) -%}
   <fieldset class="apos-fieldset apos-fieldset-array apos-fieldset-{{ name | css }}"  data-name="{{ name }}">
     <div class="apos-fieldset-row">
-      {# <label>{{ __(label) | e }}</label> #}
-      {# Cannot be inside the sortable div #}
+      {#- <label>{{ __(label) | e }}</label> -#}
+      {#- Cannot be inside the sortable div -#}
       <span class="apos-ui-container">
         <a href="#" class="apos-control apos-button" data-add>
           <i class="icon-plus"></i>
@@ -119,4 +119,4 @@
     </div>
 
   </fieldset>
-{% endmacro %}
+{%- endmacro -%}

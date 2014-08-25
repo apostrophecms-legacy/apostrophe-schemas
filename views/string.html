@@ -1,6 +1,6 @@
-{% include "schemaMacros.html" %}
-{% if textarea %}
+{%- include "schemaMacros.html" -%}
+{%- if textarea -%}
   {{ formTextarea(name, label) }}
-{% else %}
+{%- else -%}
   {{ formText(name, label) }}
-{% endif %}
+{%- endif -%}
