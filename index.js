@@ -222,7 +222,54 @@ function ApostropheSchemas(options, callback) {
     return self.compose(options);
   };
 
-  // For custom types. For the builtin types we use macros.
+  // Return a new object with all default settings defined in the schema
+  self.newInstance = function(schema) {
+    var def = {};
+    _.each(schema, function(field) {
+      if (field.def !== undefined) {
+        def[field.name] = field.def;
+      }
+    });
+    return def;
+  };
+
+  // Determine whether an object is empty according to the schema.
+  // Note this is not the same thing as matching the defaults. A
+  // nonempty string or array is never considered empty. A numeric
+  // value of 0 is considered empty
+
+  self.empty = function(schema, object) {
+    return !_.find(schema, function(field) {
+      // Return true if not empty
+      var value = object[field.name];
+      if ((value !== null) && (value !== undefined) && (value !== false)) {
+        if (!self.empties[field.type]) {
+          // Type has no method to check emptiness, so assume not empty
+          return true;
+        }
+        return !self.empties[field.type](field, value);
+      }
+    });
+  };
+
+  self.empties = {
+    string: function(field, value) {
+      return !value.length;
+    },
+    boolean: function(field, value) {
+      return !value;
+    },
+    array: function(field, value) {
+      return !value.length;
+    },
+    area: function(field, value) {
+      return self._apos._aposLocals.aposAreaIsEmpty({ area: value });
+    },
+    singleton: function(field, value) {
+      return self._apos._aposLocals.aposSingletonIsEmpty({ area: value, type: field.widgetType });
+    }
+  };
+
   self.renders = {};
 
   // BEGIN CONVERTERS
@@ -774,6 +821,7 @@ function ApostropheSchemas(options, callback) {
     self.converters.csv[type.name] = type.converters.csv;
     self.converters.form[type.name] = type.converters.form;
     self.indexers[type.name] = type.indexer;
+    self.empties[type.name] = type.empty;
   };
 
   // Render a field from nunjucks
