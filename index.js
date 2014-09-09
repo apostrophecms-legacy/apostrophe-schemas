@@ -1,8 +1,7 @@
+/* globals: apos */
 var async = require('async');
 var _ = require('lodash');
 var extend = require('extend');
-var fs = require('fs');
-var moment = require('moment');
 
 function ApostropheSchemas(options, callback) {
   var self = this;
@@ -139,7 +138,6 @@ function ApostropheSchemas(options, callback) {
       });
 
       var ungrouped = [];
-      var grouped = [];
       _.each(options.groupFields, function(group) {
         _.each(group.fields || [], function(name) {
           var field = _.find(schema, function(field) {
@@ -518,6 +516,10 @@ function ApostropheSchemas(options, callback) {
       if (err) {
         return callback(err);
       }
+      //enforce limit if provided, take first N elements
+      if (field.options && field.options.limit) {
+        tags = tags.slice(0, field.options.limit);
+      }
       snippet[field.name] = tags;
       return callback(null);
     });
@@ -586,7 +588,6 @@ function ApostropheSchemas(options, callback) {
     if (!req) {
       throw new Error("convertFields invoked without a req, do you have one in your context?");
     }
-    var i;
     return async.eachSeries(schema, function(field, callback) {
       // Fields that are contextual are edited in the context of a
       // show page and do not appear in regular schema forms. They are
@@ -758,7 +759,7 @@ function ApostropheSchemas(options, callback) {
         return findObjectsInArrays(_objects, arrays.slice(1));
       }
 
-      _objects = findObjectsInArrays(objects, arrays);
+      var _objects = findObjectsInArrays(objects, arrays);
 
       if (!join.name.match(/^_/)) {
         return callback(new Error('Joins should always be given names beginning with an underscore (_). Otherwise we would waste space in your database storing the results statically. There would also be a conflict with the array field withJoins syntax. Join name is: ' + join._dotPath));
