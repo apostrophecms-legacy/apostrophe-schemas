@@ -114,6 +114,8 @@ The `url` field type is tolerant of mistakes like leaving off `http:`.
 
 The `password` field type stores a salted hash of the password via `apos.hashPassword` which can be checked later with the `password-hash` module. If the user enters nothing the existing password is not updated.
 
+The `tags` option accepts a `limit` property which can be used to restrict the number of tags that can be added.
+
 When using the `area` and `singleton` types, you may include an `options` property which will be passed to that area or singleton exactly as if you were passing it to `aposArea` or `aposSingleton`.
 
 When using the `singleton` type, you must always specify `widgetType` to indicate what type of widget should appear.
