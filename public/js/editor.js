@@ -1,3 +1,4 @@
+/* globals: async, apos, _, aposPages */
 function AposSchemas() {
   var self = this;
 
@@ -489,7 +490,7 @@ function AposSchemas() {
       return apos.afterYield(callback);
     },
     tags: function(data, name, $field, $el, field, callback) {
-      apos.enableTags(self.findSafe($el, '[data-name="' + name + '"]'), data[name]);
+      apos.enableTags(self.findSafe($el, '[data-name="' + name + '"]'), data[name], field.options || {});
       return apos.afterYield(callback);
     },
     url: function(data, name, $field, $el, field, callback) {
@@ -647,7 +648,7 @@ function AposSchemas() {
 
   self.addError = function($el, name, required) {
     self.findSafe($el, '[data-name="' + name + '"]').addClass('apos-error');
-    if (required == true) {
+    if (required === true) {
       self.findSafe($el, '[data-name="' + name + '"]').find('label').append('<span class="apos-error-message"> * required</span>');
     }
   };
@@ -695,7 +696,7 @@ function AposSchemas() {
   // "name" attribute, without false positives from nested
   // schemas in unrelated fieldsets.
   self.findField = function($el, name) {
-    $fieldset = self.findFieldset($el, name);
+    var $fieldset = self.findFieldset($el, name);
     return self.findSafe($fieldset, '[name="' + name + '"]');
   };
 
