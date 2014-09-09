@@ -518,7 +518,7 @@ function ApostropheSchemas(options, callback) {
       }
       //enforce limit if provided, take first N elements
       if (field.options && field.options.limit) {
-        tags = tags.splice(0, field.options.limit-1);
+        tags = tags.slice(0, field.options.limit);
       }
       snippet[field.name] = tags;
       return callback(null);

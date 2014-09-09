@@ -490,7 +490,7 @@ function AposSchemas() {
       return apos.afterYield(callback);
     },
     tags: function(data, name, $field, $el, field, callback) {
-      apos.enableTags(self.findSafe($el, '[data-name="' + name + '"]'), data[name], field.options || {});
+      apos.enableTags(self.findSafe($el, '[data-name="' + name + '"]'), data[name], field || {});
       return apos.afterYield(callback);
     },
     url: function(data, name, $field, $el, field, callback) {
