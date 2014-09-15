@@ -678,18 +678,7 @@ function AposSchemas() {
   // Used to search for elements without false positives from nested
   // schemas in unrelated fieldsets
   self.findSafe = function($el, sel) {
-    return $el.find(sel).filter(function() {
-      var $parents = $(this).parents();
-      var i;
-      for (i = 0; (i < $parents.length); i++) {
-        if ($parents[i] === $el[0]) {
-          return true;
-        }
-        if ($($parents[i]).hasClass('apos-fieldset')) {
-          return false;
-        }
-      }
-    });
+    return $el.findSafe(sel, '.apos-fieldset');
   };
 
   // Used to search for simple elements that have a
