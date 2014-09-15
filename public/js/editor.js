@@ -258,7 +258,7 @@ function AposSchemas() {
       // Fix $field since we can't use the regular name attribute here
       $field = self.findSafe($el, '[data-name="' + name + '"]');
       data[field.idField] = $field.selective('get', { incomplete: true })[0];
-      if (field.required && !data[name]) {
+      if (field.required && (!data[field.idField])) {
         return apos.afterYield(_.partial(callback, 'required'));
       }
       return apos.afterYield(callback);
