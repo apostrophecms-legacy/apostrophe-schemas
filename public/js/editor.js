@@ -664,13 +664,8 @@ function AposSchemas() {
   // has invoked addError().
 
   self.scrollToError = function($el) {
-    var $element = self.findSafe($el, '.apos-error');
-    if (!$element.length) {
-      return;
-    }
-    var offset = $element.offset();
-    var scrollTop = offset.top - 100;
-    $('html, body').scrollTop(scrollTop);
+    // Awesome plugin
+    var $element = self.findSafe($el, '.apos-error').scrollintoview();
     $element.find('input,select,textarea').first().focus();
   };
 
