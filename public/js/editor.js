@@ -32,13 +32,14 @@ function AposSchemas() {
 
     function afterPopulateFields() {
 
-      // This function actually toggles the things based on data-show-fields of options in select
-      function toggleHiddenFields($select){
+      // This function actually toggles the things based on data-showFields of options in select
+      function toggleHiddenFields($select) {
 
-        var $hideFieldOptions = $select.find('option:not(:selected)');
+        // First hide all the fields in our unselected options
+        var $hideFieldOptions = $select.siblings('.selectize-control').find('.selectize-dropdown-content div:not(.selected)');
 
         _.each($hideFieldOptions, function(hideFieldOption){
-          var hideFields = $(hideFieldOption).data('show-fields');
+          var hideFields = $(hideFieldOption).attr('data-showFields');
 
           if (hideFields && hideFields.length > 0) {
             hideFields = hideFields.split(',');
@@ -50,7 +51,8 @@ function AposSchemas() {
           }
         });
 
-        var showFields = $select.find('option:selected').data('show-fields');
+        // Now show the fields for our selected option
+        var showFields = $select.siblings('.selectize-control').find('[data-selected]').attr('data-showFields');
         if (showFields && showFields.length > 0) {
           showFields = showFields.split(',');
 
@@ -61,19 +63,22 @@ function AposSchemas() {
         }
       }
 
-      // loop over any (safe) select we've marked for functionality, do initial toggle, add listener
-      _.each(schema, function(field) {
-        if (field.type == 'select') {
-          var $fieldset = self.findFieldset($el, field.name);
+      window.apos.on('enhance', function() { 
 
-          if ($fieldset.hasClass('apos-fieldset-select-show-fields')){
-            var $toggleSelect = self.findSafe($fieldset, 'select');
-            toggleHiddenFields($toggleSelect);
-            $toggleSelect.on('change', function(){
-              toggleHiddenFields($(this));
-            });
-          }
-        }
+        // loop over any (safe) select we've marked for functionality, do initial toggle, add listener
+        _.each(schema, function(field) {
+          if (field.type == 'select') {
+            var $fieldset = self.findFieldset($el, field.name);
+
+            if ($fieldset.hasClass('apos-fieldset-select-show-fields')){
+              var $toggleSelect = self.findSafe($fieldset, 'select');
+              toggleHiddenFields($toggleSelect);
+              $toggleSelect.on('change', function(){
+                toggleHiddenFields($(this));
+              });
+            }
+          } 
+        });
       });
 
       callback(null);
