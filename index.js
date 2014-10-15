@@ -493,7 +493,7 @@ function ApostropheSchemas(options, callback) {
         } else if (attr.type === 'select') {
           validatedRelationship[attr.name] = self._apos.sanitizeSelect(e[attr.name], attr.choices);
         } else {
-          console.log(snippet.name + ': unknown type for attr attribute of relationship ' + name + ', ignoring');
+          console.error(snippet.name + ': unknown type for attr attribute of relationship ' + name + ', ignoring');
         }
       });
       snippet[field.relationshipsField][id] = validatedRelationship;
@@ -684,7 +684,11 @@ function ApostropheSchemas(options, callback) {
         return !!self.joinrs[field.type];
       });
       _.each(_joins, function(join) {
-        join._dotPath = arrays.join('.') + '.' + join.name;
+        if (!arrays.length) {
+          join._dotPath = join.name;
+        } else {
+          join._dotPath = arrays.join('.') + '.' + join.name;
+        }
         // If we have more than one object we're not interested in joins
         // with the ifOnlyOne restriction right now.
         if ((objects.length > 1) && join.ifOnlyOne) {
@@ -720,8 +724,9 @@ function ApostropheSchemas(options, callback) {
         _.each(withJoins, function(withJoinName) {
           if (withJoinName === dotPath) {
             winner = true;
+            return;
           }
-          if (withJoinName.substr(0, dotPath + 1) === (dotPath + '.')) {
+          if (withJoinName.substr(0, dotPath.length + 1) === (dotPath + '.')) {
             if (!withJoinsNext[dotPath]) {
               withJoinsNext[dotPath] = [];
             }
