@@ -1,4 +1,4 @@
-/* globals: async, apos, _, aposPages */
+/* globals: async, apos, _, aposPages, async, $ */
 function AposSchemas() {
   var self = this;
 
@@ -77,7 +77,7 @@ function AposSchemas() {
                 toggleHiddenFields($(this));
               });
             }
-          } 
+          }
         });
       });
 
@@ -520,14 +520,7 @@ function AposSchemas() {
           $field.append($option);
         });
       }
-      if ((!data._id) && field.def) {
-        $field.val(field.def);
-      } else {
-        // Always select the first item if no item is selected.
-        // This is consistent with what most browsers do and works around
-        // an issue with lister
-        $field.val(((data[name] === undefined) && field.choices[0]) ? field.choices[0].value : data[name]);
-      }
+      $field.val(((data[name] === undefined) && field.choices[0]) ? field.choices[0].value : data[name]);
       return apos.afterYield(callback);
     },
     integer: function(data, name, $field, $el, field, callback) {
