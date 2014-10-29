@@ -1,4 +1,4 @@
-/* globals: apos */
+/* jshint node:true */
 var async = require('async');
 var _ = require('lodash');
 var extend = require('extend');
@@ -492,6 +492,8 @@ function ApostropheSchemas(options, callback) {
           validatedRelationship[attr.name] = self._apos.sanitizeBoolean(e[attr.name]);
         } else if (attr.type === 'select') {
           validatedRelationship[attr.name] = self._apos.sanitizeSelect(e[attr.name], attr.choices);
+        } else if (attr.type === 'tags') {
+          validatedRelationship[attr.name] = self._apos.sanitizeTags(e[attr.name]);
         } else {
           console.error(snippet.name + ': unknown type for attr attribute of relationship ' + name + ', ignoring');
         }

@@ -63,7 +63,7 @@ function AposSchemas() {
         }
       }
 
-      window.apos.on('enhance', function() { 
+      window.apos.on('enhance', function() {
 
         // loop over any (safe) select we've marked for functionality, do initial toggle, add listener
         _.each(schema, function(field) {
@@ -275,6 +275,17 @@ function AposSchemas() {
     joinByArray: function(data, name, $field, $el, field, callback) {
       // Fix $field since we can't use the regular name attribute here
       $field = self.findSafe($el, '[data-name="' + name + '"]');
+      $field.off('afterGetItem');
+      // Implement custom relationship field types (tags)
+      $field.on('afterGetItem', function(e, item, $item) {
+        _.each(field.relationship || [], function(field) {
+          if (field.type === 'tags') {
+            var $tags = $item.findSafe('[data-name="' + field.name + '"]', '[data-selective]');
+            item[field.name] = $tags.selective('get');
+          }
+        });
+      });
+
       var info = $field.selective('get', { incomplete: true });
       if (field.relationshipsField) {
         data[field.idsField] = _.pluck(info, 'value');
@@ -554,7 +565,7 @@ function AposSchemas() {
       if (manager) {
         autocomplete = manager._action + '/autocomplete';
       }
-      $field.selective({ limit: 1, data: selectiveData, source: autocomplete });
+      $field.selective({ limit: 1, data: selectiveData, source: autocomplete, nestGuard: '[data-selective]' });
 
       self.enhanceSelectiveWithSlugs($field);
       return apos.afterYield(callback);
@@ -569,6 +580,18 @@ function AposSchemas() {
       if (!$field.length) {
         apos.log('Error: your new.html template for the ' + self.name + ' module does not have a snippetSelective call for the ' + name + ' join yet');
       }
+
+      // Implement custom relationship field types (tags)
+      $field.off('afterAddItem');
+      $field.on('afterAddItem', function(e, item, $item) {
+        _.each(field.relationship || [], function(field) {
+          if (field.type === 'tags') {
+            var $tags = $item.findSafe('[data-name="' + field.name + '"]', '[data-selective]');
+            apos.enableTags($tags, item[field.name] || []);
+          }
+        });
+      });
+
       var selectiveData = [];
 
       // For now this is still correct on the browser side, getManager
@@ -607,7 +630,7 @@ function AposSchemas() {
         };
       }
 
-      $field.selective({ preventDuplicates: true, sortable: field.sortable, extras: !!field.relationship, data: data[field.idsField] || [], source: autocomplete });
+      $field.selective({ preventDuplicates: true, sortable: field.sortable, extras: !!field.relationship, data: data[field.idsField] || [], source: autocomplete, nestGuard: '[data-selective]' });
       self.enhanceSelectiveWithSlugs($field);
       return apos.afterYield(callback);
     },
