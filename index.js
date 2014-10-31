@@ -748,6 +748,7 @@ function ApostropheSchemas(options, callback) {
         }
       });
     }
+
     return async.eachSeries(joins, function(join, callback) {
       var arrays = join._arrays;
 
@@ -810,13 +811,17 @@ function ApostropheSchemas(options, callback) {
         }
       };
 
+      // Allow options to the get() method to be
+      // specified in the join configuration
+      if (join.getOptions) {
+        _.extend(options.getOptions, join.getOptions);
+      }
+
       // Allow options to the getter to be specified in the schema,
       // notably editable: true
       _.extend(options.getOptions, join.getOptions || {});
       return self.joinrs[join.type](req, join, options, _objects, callback);
-    }, function(err) {
-      return callback(err);
-    });
+    }, callback);
   };
 
   // Add a new field type. Note that the template property of the type object

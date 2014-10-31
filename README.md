@@ -539,6 +539,25 @@ Now any call to `schema.join` with only one object, or an array of only one obje
 
 Hint: in index views of many objects, consider using AJAX to load related objects when the user indicates interest rather than displaying related objects all the time.
 
+Another way to speed up joins is to limit the fields that are fetched in the join. You may pass options such as `fields` to the `get` method used to actually fetch the joined objects. Note that `apos.get` and everything derived from it, like `snippets.get`, will accept a `fields` option which is passed to MongoDB as the projection:
+
+```javascript
+'stories': {
+  addFields: [
+    {
+      name: '_books',
+      withType: 'book',
+      label: 'Books',
+      getOptions: {
+        fields: { title: 1, slug: 1 }
+      }
+    }
+  ]
+}
+```
+
+If you are just linking to things, `{ title: 1, slug: 1 }` is a good projection to use. You can also include specific areas by name in this way.
+
 #### Reverse Many-To-Many Joins
 
 We can also access the books from the story if we set the join up in the stories module as well:
