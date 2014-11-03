@@ -28,7 +28,8 @@ This module is now in production use, powering the `apostrophe-snippets` module,
   * [Adding New Field Types](#adding-new-field-types)
   * Support for Subclassing and Mixins
     * [Creating Schemas With Compose](#creating-schemas-with-compose)
-    * [Refining Existing Schemas With Refine](#refining-existing-schemas-with-refine)
+    * [Refining existing schemas with refine](#refining-existing-schemas-with-refine)
+    * [Filtering existing schemas with subset](#filtering-existing-schemas-with-subset)
 
 `apostrophe-schemas` adds support for simple schemas of editable properties to any object. Schema types include text, select, apostrophe areas and singletons, joins (relationships to other objects), and more. This module is used by the `apostrophe-snippets` module to implement its edit views and can also be used elsewhere.
 
@@ -792,6 +793,16 @@ We can also supply an optional `indexer` method to allow site-wide searches to l
   }
 ```
 
+And, if our field modifies properties other than the one matching its `name`, we must supply a `copier` function so that the `subsetInstance` method can be used to edit personal profiles and the like:
+
+```javascript
+  copier: function(name, from, to, field) {
+    // Note: if this is really all you need, you can skip
+    // writing a copier
+    to[name] = from[name];
+  }
+```
+
 The `views/schemaList.html` template should look like this. Note that the "name" and "label" options are passed to the template. In fact, all properties of the field that are part of the schema are available to the template. Setting `data-name` correctly is crucial. Adding a CSS class based on the field name is a nice touch but not required.
 
 ```jinja
@@ -991,3 +1002,31 @@ var newSchema = schemas.refine(schema, {
 });
 
 The options are exactly the same as the options to `compose`. The returned array is a copy. No modifications are made to the original schema array.
+
+#### Filtering existing schemas with `subset`
+
+If you just want to keep certain fields in your schema, while maintaining the same tab groups, use the `subset` method. This method will discard any unwanted fields, as well as any groups that are empty in the new subset of the schema:
+
+```javascript
+// A subset suitable for people editing their own profiles
+var profileSchema = schemas.subset(schema, [ 'title', 'body', 'thumbnail' ]);
+```
+
+If you wish to apply new groups to the subset, use `refine` and `groupFields`.
+
+#### Creating new objects with `newInstance`
+
+The `newInstance` method can be used to create an object which has the appropriate default value for every schema field:
+
+```javascript
+var snowman = schemas.newInstance(snowmanSchema);
+```
+
+#### Filtering object properties with `subsetInstance`
+
+The `subsetInstance` method accepts a schema and an existing instance object and returns a new object with only the properties found in the given schema. This includes not just the obvious properties matching the `name` of each field, but also any `idField` or `idsField` properties specified by joins.
+
+```javascript
+var profileSchema = schemas.subset(people.schema, [ 'title', 'body', 'thumbnail' ]);
+var profile = schemas.subsetInstance(person, profileSchema);
+```

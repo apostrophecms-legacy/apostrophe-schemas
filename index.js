@@ -124,6 +124,9 @@ function ApostropheSchemas(options, callback) {
       schema = _.filter(schema, function(field) {
         return (field.type !== 'group');
       });
+      _.each(schema, function(field) {
+        delete field.group;
+      });
 
       // Check for groups and fields with the same name, which is
       // forbidden because groups are internally represented as fields
@@ -220,6 +223,35 @@ function ApostropheSchemas(options, callback) {
     return self.compose(options);
   };
 
+  // Return a new schema containing only the fields named in the
+  // `fields` array, while maintaining existing group relationships.
+  // Any empty groups are dropped. Do NOT include group names
+  // in `fields`.
+
+  self.subset = function(schema, fields) {
+
+    var schemaSubset = _.filter(schema, function(field) {
+      return _.contains(fields, field.name) || (field.type === 'group');
+    });
+
+    // Drop empty tabs
+    var fieldsByGroup = _.groupBy(schemaSubset, 'group');
+    schemaSubset = _.filter(schemaSubset, function(field) {
+      return (field.type !== 'group') || (_.has(fieldsByGroup, field.name));
+    });
+
+    // Drop references to empty tabs
+    _.each(schemaSubset, function(field) {
+      if (field.group && (!_.find(schemaSubset, function(group) {
+        return ((group.type === 'group') && (group.name === field.group));
+      }))) {
+        delete field.group;
+      }
+    });
+
+    return schemaSubset;
+  };
+
   // Return a new object with all default settings defined in the schema
   self.newInstance = function(schema) {
     var def = {};
@@ -229,6 +261,28 @@ function ApostropheSchemas(options, callback) {
       }
     });
     return def;
+  };
+
+  self.subsetInstance = function(schema, instance) {
+    var subset = {};
+    _.each(schema, function(field) {
+      if (field.type === 'group') {
+        return;
+      }
+      if (!self.copiers[field]) {
+        // These rules suffice for our standard fields
+        subset[field.name] = instance[field.name];
+        if (field.idField) {
+          subset[field.idField] = instance[field.idField];
+        }
+        if (field.idsField) {
+          subset[field.idsField] = instance[field.idsField];
+        }
+      } else {
+        self.copiers[field](name, instance, subset, field);
+      }
+    });
+    return subset;
   };
 
   // Determine whether an object is empty according to the schema.
@@ -303,7 +357,7 @@ function ApostropheSchemas(options, callback) {
     checkboxes: function(req, data, name, object, field, callback) {
         data[name] = self._apos.sanitizeString(data[name]).split(',');
 
-        if (typeof(data[name]) !== 'array') {
+        if (!Array.isArray(data[name])) {
           object[name] = [];
           return setImmediate(callback);
         }
@@ -528,7 +582,7 @@ function ApostropheSchemas(options, callback) {
   };
 
   self.converters.form.checkboxes = function(req, data, name, object, field, callback) {
-    if (typeof(data[name]) != 'array') {
+    if (!Array.isArray(data[name])) {
       object[name] = [];
       return setImmediate(callback);
     }
@@ -835,6 +889,7 @@ function ApostropheSchemas(options, callback) {
     self.converters.form[type.name] = type.converters.form;
     self.indexers[type.name] = type.indexer;
     self.empties[type.name] = type.empty;
+    self.copiers[type.name] = self.copier;
   };
 
   // Render a field from nunjucks
@@ -848,6 +903,8 @@ function ApostropheSchemas(options, callback) {
     }
     return render(field).trim();
   });
+
+  self.copiers = {};
 
   if (callback) {
     return callback(null);
