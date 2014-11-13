@@ -230,11 +230,11 @@ It's easy to access the resulting information in a page template, such as the `s
 </ul>
 ```
 
-Areas and thumbnails are allowed in arrays. In order to display them in a page template,  you'll need to use this syntax:
+Areas and thumbnails are allowed in arrays. You can display them in the same way you would any area:
 
 ```markup
 {% for office in item.offices %}
-  {{ aposSingleton({ area: office.thumbnail, type: 'slideshow', more options... }) }}
+  {{ aposSingleton(office, 'thumbnail', 'slideshow', { more options... }) }}
 {% endfor %}
 ```
 
@@ -242,11 +242,9 @@ For an area you would write:
 
 ```markup
 {% for office in item.offices %}
-  {{ aposArea({ area: office.body, more options... }) }}
+  {{ aposArea(office, 'body', { more options... }) }}
 {% endfor %}
 ```
-
-Since the area is not a direct property of the page, we can't use the `(page, areaname)` syntax that is typically more convenient.
 
 Areas and thumbnails in arrays **can** be edited "in context" on a page.
 
