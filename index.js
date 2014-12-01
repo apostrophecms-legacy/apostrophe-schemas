@@ -596,6 +596,55 @@ function ApostropheSchemas(options, callback) {
 
   // END CONVERTERS
 
+
+  // BEGIN EPORTERS
+
+  // Exporters from various formats for CSV, plain text output. 
+  self.exporters = {};
+  self.exporters.csv = {
+    string: function(req, snippet, field, output, callback) {
+      // no formating, set the field
+      output[field] = snippet[field];
+      return setImmediate(callback);
+    },
+    select: function(req, snippet, field, output, callback) {
+      output[field] = snippet[field] || '';
+      return setImmediate(callback);
+    },
+    slug: function(req, snippet, field, output, callback) {
+      // no formating, set the field
+      output[field] = snippet[field];
+      return setImmediate(callback);
+    },
+    tags: function(req, snippet, field, output, callback) {
+      var tags;
+      tags = self._apos.sanitizeString(snippet[field]);
+      tags = self._apos.tagsToArray(tags);
+      output[field] = tags.toString();
+      return setImmediate(callback);
+    },
+    boolean: function(req, snippet, field, output, callback) {
+      output[field] = self._apos.sanitizeBoolean(snippet[field], field.def).toString();
+      return setImmediate(callback);
+    },
+    group: function(req, snippet, field, output, callback) {
+      // This is a visual grouping element and has no data
+      return setImmediate(callback);
+    },
+    a2Groups: function(req, snippet, field, output, callback) {
+      // This is a visual grouping element and has no data
+      return setImmediate(callback);
+    },
+    password: function(req, snippet, field, output, callback) {
+      // don't export
+      return setImmediate(callback);
+    },
+    a2Permissions: function(req, snippet, field, output, callback) {
+      // don't export
+      return setImmediate(callback);
+    },
+  }
+
   // Make each type of schema field searchable. You can shut this off
   // for any field by setting its `search` option to false. Not all
   // field types make sense for search. Areas and singletons are always
@@ -660,6 +709,33 @@ function ApostropheSchemas(options, callback) {
         throw new Error("Schema converter methods must now take the following arguments: req, data, field.name, object, field, callback. They must also invoke the callback.");
       }
       return self.converters[from][field.type](req, data, field.name, object, field, function(err) {
+        return callback(err);
+      });
+    }, function(err) {
+      return callback(err);
+    });
+  };
+
+  // Export santized 'snippet' into 'object'
+  self.exportFields = function(req, schema, to, snippet, object, callback) {
+    if (arguments.length !== 6) {
+      throw new Error("exportFields now takes 6 arguments, with req added in front and callback added at the end");
+    }
+    if (!req) {
+      throw new Error("exportFields invoked without a req, do you have one in your context?");
+    }
+    return async.eachSeries(schema, function(field, callback) {
+
+      if (!self.exporters[to][field.type]) {
+        console.log("ERROR: No exporter exists for schema field type " + field.type + ", field definition was: " + JSON.stringify(field));
+        console.log("You can add support for this field type in schemas.exporters");
+        return callback(null);
+      }
+      if (self.exporters[to][field.type].length !== 5) {
+        console.error(self.exporters[to][field.type].toString());
+        throw new Error("Schema export methods must now take the following arguments: req, snippet, field.name, output, callback. They must also invoke the callback.");
+      }
+      return self.exporters[to][field.type](req, snippet, field.name, object, function(err) {
         return callback(err);
       });
     }, function(err) {
