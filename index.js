@@ -602,44 +602,41 @@ function ApostropheSchemas(options, callback) {
   // Exporters from various formats for CSV, plain text output. 
   self.exporters = {};
   self.exporters.csv = {
-    string: function(req, snippet, field, output, callback) {
+    string: function(req, snippet, field, name, output, callback) {
       // no formating, set the field
-      output[field] = snippet[field];
+      output[name] = snippet[name];
       return setImmediate(callback);
     },
-    select: function(req, snippet, field, output, callback) {
-      output[field] = snippet[field] || '';
+    select: function(req, snippet, field, name, output, callback) {
+      output[name] = snippet[name] || '';
       return setImmediate(callback);
     },
-    slug: function(req, snippet, field, output, callback) {
+    slug: function(req, snippet, field, name, output, callback) {
       // no formating, set the field
-      output[field] = snippet[field];
+      output[name] = snippet[name];
       return setImmediate(callback);
     },
-    tags: function(req, snippet, field, output, callback) {
-      var tags;
-      tags = self._apos.sanitizeString(snippet[field]);
-      tags = self._apos.tagsToArray(tags);
-      output[field] = tags.toString();
+    tags: function(req, snippet, field, name, output, callback) {
+      output[name] = snippet[name].toString();
       return setImmediate(callback);
     },
-    boolean: function(req, snippet, field, output, callback) {
-      output[field] = self._apos.sanitizeBoolean(snippet[field], field.def).toString();
+    boolean: function(req, snippet, field, name, output, callback) {
+      output[name] = self._apos.sanitizeBoolean(snippet[name]).toString();
       return setImmediate(callback);
     },
-    group: function(req, snippet, field, output, callback) {
+    group: function(req, snippet, field, name, output, callback) {
       // This is a visual grouping element and has no data
       return setImmediate(callback);
     },
-    a2Groups: function(req, snippet, field, output, callback) {
+    a2Groups: function(req, snippet, field, name, output, callback) {
       // This is a visual grouping element and has no data
       return setImmediate(callback);
     },
-    password: function(req, snippet, field, output, callback) {
+    password: function(req, snippet, field, name, output, callback) {
       // don't export
       return setImmediate(callback);
     },
-    a2Permissions: function(req, snippet, field, output, callback) {
+    a2Permissions: function(req, snippet, field, name, output, callback) {
       // don't export
       return setImmediate(callback);
     },
@@ -731,11 +728,11 @@ function ApostropheSchemas(options, callback) {
         console.log("You can add support for this field type in schemas.exporters");
         return callback(null);
       }
-      if (self.exporters[to][field.type].length !== 5) {
+      if (self.exporters[to][field.type].length !== 6) {
         console.error(self.exporters[to][field.type].toString());
-        throw new Error("Schema export methods must now take the following arguments: req, snippet, field.name, output, callback. They must also invoke the callback.");
+        throw new Error("Schema export methods must now take the following arguments: req, snippet, field, field.name, output, callback. They must also invoke the callback.");
       }
-      return self.exporters[to][field.type](req, snippet, field.name, object, function(err) {
+      return self.exporters[to][field.type](req, snippet, field, field.name, object, function(err) {
         return callback(err);
       });
     }, function(err) {
