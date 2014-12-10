@@ -46,7 +46,9 @@ function AposSchemas() {
 
             _.each(hideFields, function(field){
               var $fieldset = self.findFieldset($el, field);
+              var $helpText = $fieldset.next('p.apos-help');
               $fieldset.addClass('apos-hidden');
+              $helpText.addClass('apos-hidden');
             });
           }
         });
@@ -58,7 +60,9 @@ function AposSchemas() {
 
           _.each(showFields, function(field){
             var $fieldset = self.findFieldset($el, field);
+            var $helpText = $fieldset.next('p.apos-help');
             $fieldset.removeClass('apos-hidden');
+            $helpText.removeClass('apos-hidden');
           });
         }
       }
