@@ -736,6 +736,8 @@ On the server side, we'll need to write three methods:
 
 The converter's job is to ensure the content is really a list of strings and then populate the object with it. We pull the list from `data` (what the user submitted) and use it to populate `object`. We also have access to the field name (`name`) and, if we need it, the entire field object (`field`), which allows us to implement custom options.
 
+**Your converter must not set the property to undefined or delete the property.** It must be possible to distinguish a property that has been set to a value, even if that value is `false` or `null` or `[]`, from one that is currently undefined and should therefore display the default.
+
 Here's an example of a custom field type: a simple list of strings.
 
 ```javascript
