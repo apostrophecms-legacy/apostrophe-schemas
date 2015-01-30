@@ -193,6 +193,8 @@ function AposSchemas() {
       { content: items, options: options }, function(data) {
       var $editView = self.findSafe($fieldset, '[data-' + name + '-edit-view]');
       $editView.append(data);
+      // Make sure slideshows, videos, etc. get their JS
+      apos.enablePlayers($editView);
       return callback(null);
     });
   };
