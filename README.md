@@ -278,20 +278,20 @@ You may want to customize the way a particular field is output. The most future-
 
 ```markup
 {% macro renderTitle(field) %}
-<fieldset data-name="field.name" class="super-awesome">special awesome title: <input name="field.name" /></fieldset>
+<fieldset data-name="{{ field.name }}" class="super-awesome">
+  special awesome title: <input name="{{ field.name }}" />
+</fieldset>
 {% endmacro %}
 
-{%- block modalBody -%}
-  <form>
-    {{
-      snippetAllFields(fields, {
-        custom: {
-          title: renderTitle
-        }
-      })
-    }}
-  </form>
-{%- endblock -%}
+<form>
+  {{
+    schemaFields(schema, {
+      custom: {
+        title: renderTitle
+      }
+    })
+  }}
+</form>
 ```
 
 This way, Apostrophe outputs all of the fields for you, grouped into the proper tabs if any, but you still get to use your own macro to render this particular field.
