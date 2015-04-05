@@ -68,10 +68,16 @@
         {{ schemaOpenGroup(fields, field.group, activeGroup) }}
         {%- set lastGroup = field.group -%}
       {%- endif -%}
-      {# Invokes standard templates for each type in
-        apostrophe-schemas/templates/views, or custom renderers
-        if supplied for the field's type or that individual field #}
-      {{ aposSchemaField(field) }}
+      {% set replacement = options.custom and options.custom[field.name] %}
+      {% if replacement %}
+        {# If specified, call another macro to output this field #}
+        {{ replacement(field) }}
+      {% else %}
+        {# Invokes standard templates for each type in
+          apostrophe-schemas/templates/views, or custom renderers
+          if supplied for the field's type or that individual field #}
+        {{ aposSchemaField(field) }}
+      {% endif %}
       {%- if field.help -%}
         <p class="apos-help">{{ field.help | e }}</p>
       {%- endif -%}
