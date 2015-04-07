@@ -674,9 +674,10 @@ function AposSchemas() {
   // independent validation code.
 
   self.addError = function($el, name, required) {
-    self.findSafe($el, '[data-name="' + name + '"]').addClass('apos-error');
+    var $field = self.findSafe($el, '[data-name="' + name + '"]');
+    $field.addClass('apos-error');
     if (required === true) {
-      self.findSafe($el, '[data-name="' + name + '"]').find('label').append('<span class="apos-error-message"> * required</span>');
+      self.findSafe($field, 'label').append('<span class="apos-error-message"> * required</span>');
     }
   };
 
