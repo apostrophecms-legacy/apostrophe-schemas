@@ -368,7 +368,9 @@ function AposSchemas() {
         }
       }
       data[name] = values;
-      if (field.required && !data[name]) {
+      // For this type 'required' means you must check
+      // at least one of the boxes
+      if (field.required && (!data[name].length)) {
         return apos.afterYield(_.partial(callback, 'required'));
       }
       return apos.afterYield(callback);
