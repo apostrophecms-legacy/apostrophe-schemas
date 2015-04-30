@@ -9,6 +9,8 @@
   .apos-fieldset
   {
     margin-bottom: 1em !important;
+    display: none;
+    &:nth-child(2){display:block;} //Not the template.
   }
 
   .apos-fieldset-array
@@ -22,6 +24,10 @@
       background-color: darken(@apos-grey70, 15%);
       border: 3px dashed darken(@apos-grey70, 20%);
     }
+  }
+  &.apos-array-item--open
+  {
+    > .apos-fieldset {display: block;}
   }
 }
 

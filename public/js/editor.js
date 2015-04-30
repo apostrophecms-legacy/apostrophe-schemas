@@ -446,8 +446,13 @@ function AposSchemas() {
         $element.removeClass('apos-template');
         addRemoveHandler($element);
         addMoveHandler($element);
+        addOpenHandler($element);
 
         $element.attr('data-id', data[i].id);
+
+        if (!apos.data.schemaWidgetsUi.toggleUi){
+          self.findSafe($element, '[data-open-item]').hide();
+        }
 
         $elements.append($element);
         return self.populateFields($element, field.schema, data[i], function() {
@@ -461,6 +466,7 @@ function AposSchemas() {
         var $element = $template.clone();
         $element.removeClass('apos-template');
         $elements.prepend($element);
+        addOpenHandler($element);
         addRemoveHandler($element);
         addMoveHandler($element);
 
@@ -484,6 +490,30 @@ function AposSchemas() {
           $element.remove();
           return false;
         });
+      }
+
+      function addOpenHandler($element){
+        var $open = self.findSafe($element, '[data-open-item]');
+        var $icon = self.findSafe($open, 'i');
+        var $firstInput = self.findSafe($element, 'fieldset:first input');
+        $open.on('click', function(){
+          toggleItem($element);
+          return false;
+        })
+        $firstInput.on('click', function(){
+          openItem($element);
+          return false;
+        })
+        function openItem($element){
+          $element.toggleClass('apos-array-item--open', true);
+          $icon.toggleClass('icon-plus', false);
+          $icon.toggleClass('icon-minus', true);
+        }
+        function toggleItem($element){
+          $element.toggleClass('apos-array-item--open');
+          $icon.toggleClass('icon-plus');
+          $icon.toggleClass('icon-minus');
+        }
       }
 
       function addMoveHandler($element) {
