@@ -368,7 +368,9 @@ function AposSchemas() {
         }
       }
       data[name] = values;
-      if (field.required && !data[name]) {
+      // For this type 'required' means you must check
+      // at least one of the boxes
+      if (field.required && (!data[name].length)) {
         return apos.afterYield(_.partial(callback, 'required'));
       }
       return apos.afterYield(callback);
@@ -704,9 +706,10 @@ function AposSchemas() {
   // independent validation code.
 
   self.addError = function($el, name, required) {
-    self.findSafe($el, '[data-name="' + name + '"]').addClass('apos-error');
+    var $field = self.findSafe($el, '[data-name="' + name + '"]');
+    $field.addClass('apos-error');
     if (required === true) {
-      self.findSafe($el, '[data-name="' + name + '"]').find('label').append('<span class="apos-error-message"> * required</span>');
+      self.findSafe($field, 'label').append('<span class="apos-error-message"> * required</span>');
     }
   };
 

@@ -1,9 +1,5 @@
 # apostrophe-schemas
 
-## Code Status
-
-This module is now in production use, powering the `apostrophe-snippets` module, and therefore `apostrophe-blog`, `apostrophe-events`, etc. Everything you see here has been tested, with the exception of the "adding new field types" section, which has been implemented but not yet tested. If you find issues with that feature (which is not critical for any existing A2 modules) we would welcome bug reports and pull requests.
-
 **Table of Contents**
   * [Accessing the Schemas Object In Your Module](#accessing-the-schemas-object-in-your-module)
   * [Adding New Properties To Objects Using the Schema](#adding-new-properties-to-your-snippets-using-the-schema)
@@ -274,22 +270,35 @@ Of course you must pass your schema to Nunjucks when rendering your template.
 
 All of the fields will be presented with their standard markup, ready to be populated by `aposSchemas.populateFields` in browser-side JavaScript.
 
-It is also possible to inject some custom markup around a field. Just output the fields "before" a certain point, then the fields "after" it:
+You may want to customize the way a particular field is output. The most future-proof way to do this is to use the `custom` option and pass your own macro:
 
-```jinja
-{{ schemaFields(fields, { before: 'shoeSize' }) }}
-<p>Here comes the shoe size kids!</p>
-{{ schemaText('shoeSize', 'Shoe Size') }}
-<p>Wasn't that great?</p>
-{{ schemaFields(fields, { after: 'shoeSize' }) }}
-{% endblock %}
+```markup
+{% macro renderTitle(field) %}
+<fieldset data-name="{{ field.name }}" class="super-awesome">
+  special awesome title: <input name="{{ field.name }}" />
+</fieldset>
+{% endmacro %}
+
+<form>
+  {{
+    schemaFields(schema, {
+      custom: {
+        title: renderTitle
+      }
+    })
+  }}
+</form>
 ```
 
-In addition to `before` and `from`, you may also use `after` and `to`. `before` and `after` are exclusive, while `from` and `to` are inclusive. Combining `before` and `from` let us wrap something around a specific field without messing up other fields or even having to know what they are.
+This way, Apostrophe outputs all of the fields for you, grouped into the proper tabs if any, but you still get to use your own macro to render this particular field.
 
-Yes, you can output your own custom markup for fields, provided the markup has the same data attributes and name attributes.
+If you want to include the standard rendering of a field as part of your custom output, use the `aposSchemaField` helper function:
 
-Note that you do not need to supply any arguments that can be inferred from the schema, such as the `choices` list for a `select` property, or the widget type of a singleton. The real initialization work happens in browser-side JavaScript powered by the schema.
+`aposSchemaField(field)`
+
+This will decorate the field with a `fieldset` in the usual way.
+
+Note that the user's current values for the fields, if any, are added by browser-side JavaScript. You are not responsible for that in your template.
 
 You also need to push your schema from the server so that it is visible to browser-side Javascript:
 
