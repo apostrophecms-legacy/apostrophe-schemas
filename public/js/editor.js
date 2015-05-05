@@ -454,6 +454,8 @@ function AposSchemas() {
 
         if (!apos.data.schemaWidgetsUi.toggleUi){
           self.findSafe($element, '[data-open-item]').hide();
+        } else {
+          $element.addClass('apos-array-toggle');
         }
 
         $elements.append($element);
