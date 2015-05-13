@@ -452,7 +452,7 @@ function AposSchemas() {
 
         $element.attr('data-id', data[i].id);
 
-        if (!apos.data.schemaWidgetsUi.toggleUi){
+        if (apos.data.schemaWidgetsUi && !apos.data.schemaWidgetsUi.toggleUi){
           self.findSafe($element, '[data-open-item]').hide();
         } else {
           $element.addClass('apos-array-toggle');
