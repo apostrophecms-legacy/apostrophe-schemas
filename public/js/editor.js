@@ -23,7 +23,7 @@ function AposSchemas() {
           $field.attr('autocomplete', 'off');
         }
         if(field.required === true) {
-          self.addError($el, field.name, true);
+          self.addError($el, field.name, true, true);
         }
         return apos.afterYield(callback);
       });
@@ -46,9 +46,7 @@ function AposSchemas() {
 
             _.each(hideFields, function(field){
               var $fieldset = self.findFieldset($el, field);
-              var $helpText = $fieldset.next('p.apos-help');
               $fieldset.addClass('apos-hidden');
-              $helpText.addClass('apos-hidden');
             });
           }
         });
@@ -60,9 +58,7 @@ function AposSchemas() {
 
           _.each(showFields, function(field){
             var $fieldset = self.findFieldset($el, field);
-            var $helpText = $fieldset.next('p.apos-help');
             $fieldset.removeClass('apos-hidden');
-            $helpText.removeClass('apos-hidden');
           });
         }
       }
@@ -92,7 +88,7 @@ function AposSchemas() {
   // Gather data from form elements and push it into properties of the data object,
   // as specified by the schema provided. The inverse of self.populateSomeFields
   self.convertFields = function($el, schema, data, callback) {
-    self.findSafe($el, '[data-name]').removeClass('apos-error').find('.apos-error-message').remove();
+    self.findSafe($el, '[data-name]').removeClass('apos-error').removeClass('apos-error-required').removeClass('apos-error-in-advance').find('.apos-error-message').remove();
     var failing;
 
     // async for loop
@@ -193,8 +189,6 @@ function AposSchemas() {
       { content: items, options: options }, function(data) {
       var $editView = self.findSafe($fieldset, '[data-' + name + '-edit-view]');
       $editView.append(data);
-      // Make sure slideshows, videos, etc. get their JS
-      apos.enablePlayers($editView);
       return callback(null);
     });
   };
@@ -368,9 +362,7 @@ function AposSchemas() {
         }
       }
       data[name] = values;
-      // For this type 'required' means you must check
-      // at least one of the boxes
-      if (field.required && (!data[name].length)) {
+      if (field.required && !data[name]) {
         return apos.afterYield(_.partial(callback, 'required'));
       }
       return apos.afterYield(callback);
@@ -448,15 +440,8 @@ function AposSchemas() {
         $element.removeClass('apos-template');
         addRemoveHandler($element);
         addMoveHandler($element);
-        addOpenHandler($element);
 
         $element.attr('data-id', data[i].id);
-
-        if (apos.data.schemaWidgetsUi && !apos.data.schemaWidgetsUi.toggleUi){
-          self.findSafe($element, '[data-open-item]').hide();
-        } else {
-          $element.addClass('apos-array-toggle');
-        }
 
         $elements.append($element);
         return self.populateFields($element, field.schema, data[i], function() {
@@ -470,7 +455,6 @@ function AposSchemas() {
         var $element = $template.clone();
         $element.removeClass('apos-template');
         $elements.prepend($element);
-        addOpenHandler($element);
         addRemoveHandler($element);
         addMoveHandler($element);
 
@@ -494,30 +478,6 @@ function AposSchemas() {
           $element.remove();
           return false;
         });
-      }
-
-      function addOpenHandler($element){
-        var $open = self.findSafe($element, '[data-open-item]');
-        var $icon = self.findSafe($open, 'i');
-        var $firstInput = self.findSafe($element, 'fieldset:first input');
-        $open.on('click', function(){
-          toggleItem($element);
-          return false;
-        })
-        $firstInput.on('click', function(){
-          openItem($element);
-          return false;
-        })
-        function openItem($element){
-          $element.toggleClass('apos-array-item--open', true);
-          $icon.toggleClass('icon-plus', false);
-          $icon.toggleClass('icon-minus', true);
-        }
-        function toggleItem($element){
-          $element.toggleClass('apos-array-item--open');
-          $icon.toggleClass('icon-plus');
-          $icon.toggleClass('icon-minus');
-        }
       }
 
       function addMoveHandler($element) {
@@ -707,11 +667,15 @@ function AposSchemas() {
   // A convenience method for calling attention to errors in fields in your own
   // independent validation code.
 
-  self.addError = function($el, name, required) {
-    var $field = self.findSafe($el, '[data-name="' + name + '"]');
-    $field.addClass('apos-error');
+  self.addError = function($el, name, required, inAdvance) {
+    var $fieldset = self.findFieldset($el, name);
+    $fieldset.addClass('apos-error');
     if (required === true) {
-      self.findSafe($field, 'label').append('<span class="apos-error-message"> * required</span>');
+      $fieldset.addClass('apos-error-required');
+      self.findSafe($el, '[data-name="' + name + '"]').find('label').append('<span class="apos-error-message"> * required</span>');
+    }
+    if (inAdvance) {
+      $fieldset.addClass('apos-error-in-advance');
     }
   };
 
