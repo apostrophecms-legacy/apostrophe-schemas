@@ -319,6 +319,12 @@ function ApostropheSchemas(options, callback) {
     },
     singleton: function(field, value) {
       return self._apos._aposLocals.aposSingletonIsEmpty({ area: value, type: field.widgetType });
+    },
+    select: function(field, value) {
+      // A select element is considered empty if it doesn't
+      // contain one of its allowed choices, which can happen
+      // in various import situations
+      return (!_.contains(_.pluck(field.choices, 'value'), value));
     }
   };
 
