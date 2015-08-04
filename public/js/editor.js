@@ -321,6 +321,11 @@ function AposSchemas() {
       if (field.required && !data[name].length) {
         return apos.afterYield(_.partial(callback, 'required'));
       }
+      if (field.max && (data[name].length > field.max)) {
+        var $fieldset = self.findFieldset($el, name);
+        $fieldset.addClass('apos-error-max');
+        return apos.afterYield(_.partial(callback, 'max'));
+      }
       return apos.afterYield(callback);
     },
     password: function(data, name, $field, $el, field, callback) {
@@ -495,6 +500,21 @@ function AposSchemas() {
     },
     string: function(data, name, $field, $el, field, callback) {
       $field.val(data[name]);
+      if (field.textarea) {
+        if (field.max) {
+          var $fieldset = self.findFieldset($el, name);
+          $fieldset.removeClass('apos-error-max');
+          $field.off('textchange.schema');
+          $field.on('textchange.schema', function() {
+            var length = $field.val().length;
+            if (length > field.max) {
+              $fieldset.addClass('apos-error-max');
+            } else {
+              $fieldset.removeClass('apos-error-max');
+            }
+          });
+        }
+      }
       return apos.afterYield(callback);
     },
     password: function(data, name, $field, $el, field, callback) {
