@@ -500,19 +500,23 @@ function AposSchemas() {
     },
     string: function(data, name, $field, $el, field, callback) {
       $field.val(data[name]);
-      if (field.textarea) {
-        if (field.max) {
-          var $fieldset = self.findFieldset($el, name);
-          $fieldset.removeClass('apos-error-max');
-          $field.off('textchange.schema');
-          $field.on('textchange.schema', function() {
-            var length = $field.val().length;
-            if (length > field.max) {
-              $fieldset.addClass('apos-error-max');
-            } else {
-              $fieldset.removeClass('apos-error-max');
-            }
-          });
+      if (field.max) {
+        if (field.textarea) {
+          if (field.max) {
+            var $fieldset = self.findFieldset($el, name);
+            $fieldset.removeClass('apos-error-max');
+            $field.off('textchange.schema');
+            $field.on('textchange.schema', function() {
+              var length = $field.val().length;
+              if (length > field.max) {
+                $fieldset.addClass('apos-error-max');
+              } else {
+                $fieldset.removeClass('apos-error-max');
+              }
+            });
+          }
+        } else {
+          $field.attr('maxlength', field.max);
         }
       }
       return apos.afterYield(callback);
