@@ -696,6 +696,15 @@ function ApostropheSchemas(options, callback) {
     if (!req) {
       throw new Error("convertFields invoked without a req, do you have one in your context?");
     }
+
+    // Allow alternate names for fields. Very useful when importing
+    // from a previous schema. -Tom
+    _.each(schema, function(field) {
+      if ((!_.has(data, field.name)) && field.alternate && _.has(data, field.alternate)) {
+        data[field.alternate] = data[field.name];
+      }
+    });
+
     return async.eachSeries(schema, function(field, callback) {
       // Fields that are contextual are edited in the context of a
       // show page and do not appear in regular schema forms. They are
@@ -930,7 +939,7 @@ function ApostropheSchemas(options, callback) {
               _criteria
             ]
           };
-          return apos.get(req, criteria, filters, callback);
+          return self._apos.get(req, criteria, filters, callback);
         };
       }
 

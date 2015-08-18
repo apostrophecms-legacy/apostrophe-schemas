@@ -710,7 +710,16 @@ function AposSchemas() {
 
   self.scrollToError = function($el) {
     // Awesome plugin
-    var $element = self.findSafe($el, '.apos-error').scrollintoview();
+
+    var $element = self.findSafe($el, '.apos-error');
+    if (!$element.is(':visible')) {
+      // Make sure parent tab is active
+      var tabId = $element.closest('[data-tab-id]').attr('data-tab-id');
+      if (tabId) {
+        apos.activateTab($element, tabId);
+      }
+    }
+    $element.scrollintoview();
     $element.find('input,select,textarea').first().focus();
   };
 
