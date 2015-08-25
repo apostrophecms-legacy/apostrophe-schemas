@@ -975,10 +975,14 @@ function ApostropheSchemas(options, callback) {
     self.renders[type.name] = type.render || type.template;
     self.converters.csv[type.name] = type.converters.csv;
     self.converters.form[type.name] = type.converters.form;
-    self.exporters.csv[type.name] = type.exporters.csv;
+
     self.indexers[type.name] = type.indexer;
     self.empties[type.name] = type.empty;
     self.copiers[type.name] = self.copier;
+    if (type.exporters && type.exporters.csv){
+      self.exporters.csv[type.name] = type.exporters.csv;
+    }
+
   };
 
   // Render a field from nunjucks
