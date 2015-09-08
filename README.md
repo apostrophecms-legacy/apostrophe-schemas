@@ -778,7 +778,7 @@ schemas.addFieldType({
         }
       });
       object[name] = yes;
-      return setImmmediate(function() {
+      return setImmediate(function() {
         return callback(null);
       });
     },

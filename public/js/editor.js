@@ -555,7 +555,12 @@ function AposSchemas() {
           $field.append($option);
         });
       }
-      $field.val(((data[name] === undefined) && field.choices[0]) ? field.choices[0].value : data[name]);
+      var val = ((data[name] === undefined) && field.choices[0]) ? field.choices[0].value : data[name];
+      if ($field[0] && $field[0].selectize) {
+       $field[0].selectize.setValue(val);
+      } else {
+       $field.val(val);
+      }
       return apos.afterYield(callback);
     },
     integer: function(data, name, $field, $el, field, callback) {
