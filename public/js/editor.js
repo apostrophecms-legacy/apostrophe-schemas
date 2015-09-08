@@ -608,6 +608,7 @@ function AposSchemas() {
       // Implement custom relationship field types (tags)
       $field.off('afterAddItem');
       $field.on('afterAddItem', function(e, item, $item) {
+        apos.emit('enhance', $item);
         _.each(field.relationship || [], function(field) {
           if (field.type === 'tags') {
             var $tags = $item.findSafe('[data-name="' + field.name + '"]', '[data-selective]');
