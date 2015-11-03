@@ -64,6 +64,9 @@
                 <div class="apos-modal-tab-title {% if loop.first -%}apos-active{%- endif %}" data-tab="{{ group.name }}"><i class="{{ group.icon }}"></i> {{ group.label }}</div>
               {%- endfor -%}
             </div>
+            {# Helpful when treating tabs as scrolling signposts rather than #}
+            {# showing and hiding divs. -Tom #}
+            <div class="apos-modal-tab-bodies">
         {%- endif -%}
         {{ schemaOpenGroup(fields, field.group, activeGroup) }}
         {%- set lastGroup = field.group -%}
@@ -92,7 +95,10 @@
   {# Nunjucks won't let us just test lastGroup from here due to #}
   {# scoping issues https://github.com/mozilla/nunjucks/issues/166 #}
   {%- if aposFilterNonempty(fields, 'group').length -%}
-    {{ schemaCloseGroup() }}
+      {{ schemaCloseGroup() }}
+      {# apos-modal-tab-bodies #}
+      </div>
+    {# apos-modal-tabs #}
     </div>
   {%- endif -%}
 {%- endmacro -%}
