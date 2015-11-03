@@ -1,5 +1,5 @@
 {
-  "version": "0.5.77",
+  "version": "0.5.78",
   "name": "apostrophe-schemas",
   "description": "Schemas for easy editing of properties in Apostrophe objects",
   "main": "index.js",
