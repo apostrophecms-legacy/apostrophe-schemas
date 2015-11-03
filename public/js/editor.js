@@ -350,7 +350,11 @@ function AposSchemas() {
       return apos.afterYield(callback);
     },
     boolean: function(data, name, $field, $el, field, callback) {
-      data[name] = $field.val();
+      if (field.checkbox) {
+        data[name] = $field.prop('checked');
+      } else {
+        data[name] = $field.val();
+      }
       // Seems odd but sometimes used to mandate an "I agree" box
       if (field.required && !data[name]) {
         return apos.afterYield(_.partial(callback, 'required'));
@@ -572,7 +576,11 @@ function AposSchemas() {
       return apos.afterYield(callback);
     },
     boolean: function(data, name, $field, $el, field, callback) {
-      $field.val(data[name] ? '1' : '0');
+      if (field.checkbox) {
+        $field.prop('checked', data[name]);
+      } else {
+        $field.val(data[name] ? '1' : '0');
+      }
       return apos.afterYield(callback);
     },
     joinByOne: function(data, name, $field, $el, field, callback) {
