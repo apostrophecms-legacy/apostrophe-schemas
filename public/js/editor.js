@@ -445,6 +445,7 @@ function AposSchemas() {
         $element.removeClass('apos-template');
         addRemoveHandler($element);
         addMoveHandler($element);
+        addOpenHandler($element);
 
         $element.attr('data-id', data[i].id);
 
@@ -462,6 +463,8 @@ function AposSchemas() {
         $elements.prepend($element);
         addRemoveHandler($element);
         addMoveHandler($element);
+        addOpenHandler($element);
+        toggleOpen($element, self.findSafe($element, '[data-open-item]'));
 
         var element = {};
         _.each(field.schema, function(field) {
@@ -495,6 +498,19 @@ function AposSchemas() {
           }
           return false;
         });
+      }
+
+      function addOpenHandler($element) {
+        var $open = self.findSafe($element, '[data-open-item]');
+        $open.on('click', function() {
+          toggleOpen($element, $(this));
+          return false;
+        });
+      }
+
+      function toggleOpen($element, $open) {
+        $element.toggleClass('apos-array-item--open');
+        $open.find('i').toggleClass('icon-minus');
       }
 
     },
