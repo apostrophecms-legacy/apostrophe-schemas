@@ -449,9 +449,18 @@ function AposSchemas() {
         $element.removeClass('apos-template');
         addRemoveHandler($element);
         addMoveHandler($element);
-        addOpenHandler($element);
-        // Default state for existing elements is closed
-        toggleOpen($element, self.findSafe($element, '[data-open-item]'), false);
+
+        // If the minimize option is passed to an array schema field, it
+        // will automatically hide all element fields except for the first
+        // one. The other fields will be revealed upon toggling the '+'
+        // button or focussing the first field.
+        if (field.minimize) {
+          addOpenHandler($element);
+          // Default state for existing elements is closed
+          toggleOpen($element, self.findSafe($element, '[data-open-item]'), false);
+        } else {
+          alwaysOpen($element);
+        }
 
         $element.attr('data-id', data[i].id);
 
@@ -469,9 +478,14 @@ function AposSchemas() {
         $elements.prepend($element);
         addRemoveHandler($element);
         addMoveHandler($element);
-        addOpenHandler($element);
-        // Default state for new elements is expanded
-        toggleOpen($element, self.findSafe($element, '[data-open-item]'), true);
+
+        if (field.minimize) {
+          addOpenHandler($element);
+          // Default state for new elements is expanded
+          toggleOpen($element, self.findSafe($element, '[data-open-item]'), true);
+        } else {
+          alwaysOpen($element);
+        }
 
         var element = {};
         _.each(field.schema, function(field) {
@@ -518,10 +532,16 @@ function AposSchemas() {
       function toggleOpen($element, $open, state) {
         var expanded = _.isBoolean(state) ? state : undefined
         $element.toggleClass('apos-array-item--open', expanded);
-        $open.find('i').toggleClass('icon-minus', expanded);
-        $element.find('[data-name]:first-of-type input').first().off().focus(function() {
+        $open.findSafe('i').toggleClass('icon-minus', expanded);
+        $element.findSafe('[data-name]:first-of-type input').first().off().focus(function() {
           toggleOpen($element, $open, true);
         });
+      }
+
+      function alwaysOpen($element) {
+        var $open = self.findSafe($element, '[data-open-item]');
+        toggleOpen($element, self.findSafe($element, '[data-open-item]'), true);
+        $open.hide();
       }
 
     },
