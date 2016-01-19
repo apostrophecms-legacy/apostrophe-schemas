@@ -350,7 +350,11 @@ function AposSchemas() {
       return apos.afterYield(callback);
     },
     boolean: function(data, name, $field, $el, field, callback) {
-      data[name] = $field.val();
+      if (field.checkbox) {
+        data[name] = $field.prop('checked');
+      } else {
+        data[name] = $field.val();
+      }
       // Seems odd but sometimes used to mandate an "I agree" box
       if (field.required && !data[name]) {
         return apos.afterYield(_.partial(callback, 'required'));
@@ -446,6 +450,8 @@ function AposSchemas() {
         addRemoveHandler($element);
         addMoveHandler($element);
         addOpenHandler($element);
+        // Default state for existing elements is closed
+        toggleOpen($element, self.findSafe($element, '[data-open-item]'), false);
 
         $element.attr('data-id', data[i].id);
 
@@ -464,7 +470,8 @@ function AposSchemas() {
         addRemoveHandler($element);
         addMoveHandler($element);
         addOpenHandler($element);
-        toggleOpen($element, self.findSafe($element, '[data-open-item]'));
+        // Default state for new elements is expanded
+        toggleOpen($element, self.findSafe($element, '[data-open-item]'), true);
 
         var element = {};
         _.each(field.schema, function(field) {
@@ -508,9 +515,13 @@ function AposSchemas() {
         });
       }
 
-      function toggleOpen($element, $open) {
-        $element.toggleClass('apos-array-item--open');
-        $open.find('i').toggleClass('icon-minus');
+      function toggleOpen($element, $open, state) {
+        var expanded = _.isBoolean(state) ? state : undefined
+        $element.toggleClass('apos-array-item--open', expanded);
+        $open.find('i').toggleClass('icon-minus', expanded);
+        $element.find('[data-name]:first-of-type input').first().off().focus(function() {
+          toggleOpen($element, $open, true);
+        });
       }
 
     },
@@ -588,7 +599,11 @@ function AposSchemas() {
       return apos.afterYield(callback);
     },
     boolean: function(data, name, $field, $el, field, callback) {
-      $field.val(data[name] ? '1' : '0');
+      if (field.checkbox) {
+        $field.prop('checked', data[name]);
+      } else {
+        $field.val(data[name] ? '1' : '0');
+      }
       return apos.afterYield(callback);
     },
     joinByOne: function(data, name, $field, $el, field, callback) {
