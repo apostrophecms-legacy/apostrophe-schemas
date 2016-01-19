@@ -44,7 +44,7 @@ And then pass it as the `schemas` option to every module that will use it. But t
 
 ### Adding New Properties To Objects Using the Schema
 
-A schema is a simple array of objects specifying information about each field. The `apostrophe-schemass` module provides methods to build schemas, validate submitted data according to a schema, and carry out joins according to a schema. The module also provides browser-side JavaScript and Nunjucks templates to edit an object based on its schema.
+A schema is a simple array of objects specifying information about each field. The `apostrophe-schemas` module provides methods to build schemas, validate submitted data according to a schema, and carry out joins according to a schema. The module also provides browser-side JavaScript and Nunjucks templates to edit an object based on its schema.
 
 Schema objects have intentionally been kept simple so that they can be send to the browser as JSON and interpreted by browser-side JavaScript as well.
 
@@ -188,6 +188,7 @@ This is easy to do with the `array` field type:
   name: 'offices',
   label: 'Offices',
   type: 'array',
+  minimize: true,
   schema: [
     {
       name: 'city',
@@ -214,6 +215,8 @@ This is easy to do with the `array` field type:
 ```
 
 Each `array` has its own `schema`, which supports all of the usual field types. You an even nest an `array` in another `array`.
+
+The `minimize` option of the array field type enables editors to expand or hide fields of an array in order to more easily work with longer lists of items or items with very long schemas.
 
 It's easy to access the resulting information in a page template, such as the `show` template for companies. The array property is... you guessed it... an array! Not hard to iterate over at all:
 
