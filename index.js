@@ -997,6 +997,115 @@ function ApostropheSchemas(options, callback) {
     return render(field).trim();
   });
 
+  self._apos.addLocal('aposMonthChoices', function() {
+    return [
+      {
+        // These labels are passed through internationalization
+        label: 'Month',
+        value: ''
+      },
+      {
+        label: 'January',
+        value: '01'
+      },
+      {
+        label: 'February',
+        value: '02'
+      },
+      {
+        label: 'March',
+        value: '03'
+      },
+      {
+        label: 'April',
+        value: '04'
+      },
+      {
+        label: 'May',
+        value: '05'
+      },
+      {
+        label: 'June',
+        value: '06'
+      },
+      {
+        label: 'July',
+        value: '07'
+      },
+      {
+        label: 'August',
+        value: '08'
+      },
+      {
+        label: 'September',
+        value: '09'
+      },
+      {
+        label: 'October',
+        value: '10'
+      },
+      {
+        label: 'November',
+        value: '11'
+      },
+      {
+        label: 'December',
+        value: '12'
+      }
+    ]
+  });
+
+  self._apos.addLocal('aposDayChoices', function() {
+    var choices = [
+      {
+        label: 'Day',
+        value: ''
+      }
+    ];
+    var i;
+    for (i = 1; (i <= 31); i++) {
+      var formatted = self._apos.padInteger(i, 2);
+      choices.push({
+        label: formatted,
+        value: formatted
+      });
+    }
+    return choices;
+  });
+
+  // yearFrom and yearTo can be offsets from the current year, like -50 and +10 or
+  // -120 and -18, or they can be four-digit absolute years. -Tom
+
+  self._apos.addLocal('aposYearChoices', function(yearFrom, yearTo) {
+    if (yearFrom === undefined) {
+      yearFrom = -120;
+    }
+    if (yearTo === undefined) {
+      yearTo = +10;
+    }
+    var i;
+    var year = (new Date()).getFullYear();
+    if (yearFrom < 500) {
+      yearFrom = year + yearFrom;
+    }
+    if (yearTo < 500) {
+      yearTo = year + yearTo;
+    }
+    var choices = [
+      {
+        label: 'Year',
+        value: ''
+      }
+    ];
+    for (i = yearFrom; (i <= yearTo); i++) {
+      choices.push({
+        label: i.toString(),
+        value: i.toString()
+      });
+    }
+    return choices;
+  });
+
   self.copiers = {};
 
   if (callback) {

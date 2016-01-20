@@ -107,6 +107,14 @@ function AposSchemas() {
       if (!$field.length) {
         $field = self.findField($el, field.legacy);
       }
+      var $fieldset = self.findFieldset($el, field.name);
+      if ($fieldset.hasClass('apos-hidden')) {
+        // If this field is hidden by toggleHiddenFields, it is not reasonable to
+        // expect the user to populate it. This allows "required" and "showFields" to
+        // interact in a reasonable way. -Tom
+        i++;
+        return apos.afterYield(convertField);
+      }
       return self.converters[field.type](data, field.name, $field, $el, field, function(err) {
         if (err) {
           self.addError($el, field.name, field.required);
@@ -405,11 +413,32 @@ function AposSchemas() {
       return apos.afterYield(callback);
     },
     date: function(data, name, $field, $el, field, callback) {
-      data[name] = $field.val();
-      if (field.required && !data[name].length) {
-        return apos.afterYield(_.partial(callback, 'required'));
+      var $fieldset;
+      if (field.select) {
+        $fieldset = self.findFieldset($el, name);
+        var year = $fieldset.find('[data-component="year"]').val();
+        var month = $fieldset.find('[data-component="month"]').val();
+        var day = $fieldset.find('[data-component="day"]').val();
+        if (!(year || month || day)) {
+          if (field.required) {
+            return apos.afterYield(_.partial(callback, 'required'));
+          }
+          data[name] = '';
+          return apos.afterYield(callback);
+        }
+        if (!(year && month && day)) {
+          // You can't pick only *some* of the fields
+          return apos.afterYield(_.partial(callback, 'required'));
+        }
+        data[name] = year + '-' + month + '-' + day;
+        return apos.afterYield(callback);
+      } else {
+        data[name] = $field.val();
+        if (field.required && !data[name].length) {
+          return apos.afterYield(_.partial(callback, 'required'));
+        }
+        return apos.afterYield(callback);
       }
-      return apos.afterYield(callback);
     },
     time: function(data, name, $field, $el, field, callback) {
       data[name] = $field.val();
@@ -724,10 +753,27 @@ function AposSchemas() {
       return apos.afterYield(callback);
     },
     date: function(data, name, $field, $el, field, callback) {
-      $field.val(data[name]);
-      apos.enhanceDate($field);
-      if (field.legacy) {
-        apos.enhanceDate(self.findField($el, field.legacy));
+      var $fieldset;
+      if (field.select) {
+        $fieldset = self.findFieldset($el, name);
+        var current = data[name];
+        var components;
+        var year, month, day;
+        if (typeof(current) === 'string') {
+          components = current.split(/\-/);
+          year = components[0];
+          month = components[1];
+          day = components[2];
+          $fieldset.find('[data-component="year"]').val(year);
+          $fieldset.find('[data-component="month"]').val(month);
+          $fieldset.find('[data-component="day"]').val(day);
+        }
+      } else {
+        $field.val(data[name]);
+        apos.enhanceDate($field);
+        if (field.legacy) {
+          apos.enhanceDate(self.findField($el, field.legacy));
+        }
       }
       return apos.afterYield(callback);
     },
