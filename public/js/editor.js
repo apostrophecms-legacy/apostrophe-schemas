@@ -107,6 +107,14 @@ function AposSchemas() {
       if (!$field.length) {
         $field = self.findField($el, field.legacy);
       }
+      var $fieldset = self.findFieldset($el, field.name);
+      if ($fieldset.hasClass('apos-hidden')) {
+        // If this field is hidden by toggleHiddenFields, it is not reasonable to
+        // expect the user to populate it. This allows "required" and "showFields" to
+        // interact in a reasonable way. -Tom
+        i++;
+        return apos.afterYield(convertField);
+      }
       return self.converters[field.type](data, field.name, $field, $el, field, function(err) {
         if (err) {
           self.addError($el, field.name, field.required);
