@@ -306,12 +306,17 @@ function ApostropheSchemas(options, callback) {
 
   self.empties = {
     string: function(field, value) {
-      return !value.length;
+      // Protect ourselves from all the things that aren't stringlike and won't support .length
+      var v = self._apos.sanitizeString(value);
+      return !v.length;
     },
     boolean: function(field, value) {
       return !value;
     },
     array: function(field, value) {
+      if (typeof(value) !== 'object') {
+        return true;
+      }
       return !value.length;
     },
     area: function(field, value) {
