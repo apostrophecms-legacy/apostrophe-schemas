@@ -739,8 +739,18 @@ function AposSchemas() {
           });
         };
       }
-
-      $field.selective({ preventDuplicates: true, sortable: field.sortable, extras: !!field.relationship, data: data[field.idsField] || [], source: autocomplete, nestGuard: '[data-selective]' });
+      var selectiveOptions = {
+        preventDuplicates: true,
+        sortable: field.sortable,
+        extras: !!field.relationship,
+        data: data[field.idsField] || [],
+        source: autocomplete,
+        nestGuard: '[data-selective]'
+      };
+      if (field.limit !== undefined) {
+        selectiveOptions.limit = field.limit;
+      }
+      $field.selective(selectiveOptions);
       self.enhanceSelectiveWithSlugs($field);
       return apos.afterYield(callback);
     },
