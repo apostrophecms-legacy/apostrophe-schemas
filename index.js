@@ -466,6 +466,9 @@ function ApostropheSchemas(options, callback) {
           return callback(err);
         }
         results = results.pages || results.snippets;
+        if (field.limit !== undefined) {
+          results = results.slice(0, field.limit);
+        }
         snippet[field.idsField] = _.pluck(results, '_id');
         return callback(null);
       });
@@ -540,6 +543,10 @@ function ApostropheSchemas(options, callback) {
 
   self.converters.form.joinByArray = function(req, data, name, snippet, field, callback) {
     snippet[field.idsField] = self._apos.sanitizeIds(data[field.idsField]);
+
+    if (field.limit !== undefined) {
+      snippet[field.idsField] = snippet[field.idsField].slice(0, field.limit);
+    }
 
     snippet[field.relationshipsField] = {};
 
