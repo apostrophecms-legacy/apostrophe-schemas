@@ -635,7 +635,9 @@ function ApostropheSchemas(options, callback) {
       return setImmediate(callback);
     },
     tags: function(req, snippet, field, name, output, callback) {
-      output[name] = snippet[name].toString();
+      if (Array.isArray(snippet[name])) {
+        output[name] = snippet[name].toString();
+      }
       return setImmediate(callback);
     },
     boolean: function(req, snippet, field, name, output, callback) {
