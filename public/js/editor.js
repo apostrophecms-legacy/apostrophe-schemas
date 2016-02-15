@@ -561,8 +561,8 @@ function AposSchemas() {
       function toggleOpen($element, $open, state) {
         var expanded = _.isBoolean(state) ? state : undefined
         $element.toggleClass('apos-array-item--open', expanded);
-        $open.findSafe('i').toggleClass('icon-minus', expanded);
-        $element.findSafe('[data-name]:first-of-type input').first().focus(function() {
+        self.findSafe($open, 'i').toggleClass('icon-minus', expanded);
+        self.findSafe($element, '[data-name]:first-of-type input').focus(function() {
           toggleOpen($element, $open, true);
         });
       }
