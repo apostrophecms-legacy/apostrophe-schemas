@@ -6,6 +6,8 @@ function AposSchemas() {
   // specified in a schema (the schema argument). The inverse of
   // self.convertSomeFields
   self.populateFields = function($el, schema, snippet, callback) {
+    schema = self.allowedSubset($el, schema);
+
     return async.eachSeries(schema, function(field, callback) {
 
       // Utilized by simple displayers that use a simple HTML
@@ -88,6 +90,8 @@ function AposSchemas() {
   // Gather data from form elements and push it into properties of the data object,
   // as specified by the schema provided. The inverse of self.populateSomeFields
   self.convertFields = function($el, schema, data, callback) {
+    schema = self.allowedSubset($el, schema);
+
     self.findSafe($el, '[data-name]').removeClass('apos-error').removeClass('apos-error-required').removeClass('apos-error-in-advance').find('.apos-error-message').remove();
     var failing;
 
@@ -125,6 +129,22 @@ function AposSchemas() {
       });
     }
     convertField();
+  };
+
+  self.allowedSubset = function($el, schema) {
+    return _.filter(schema, function(field) {
+      if (!field.permission) {
+        return true;
+      }
+
+      if(apos.data.permissions[field.permission] || apos.data.permissions.admin) {
+        return true;
+      }
+
+      var $fieldset = self.findFieldset($el, field.name);
+      $fieldset.addClass('apos-schemas-restricted');
+      return false;
+    });
   };
 
   self.enableSingleton = function($el, name, area, type, optionsArg, callback) {

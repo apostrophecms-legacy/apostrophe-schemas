@@ -711,6 +711,14 @@ function ApostropheSchemas(options, callback) {
       throw new Error("convertFields invoked without a req, do you have one in your context?");
     }
 
+    schema = _.filter(schema, function(field) {
+      if(!field.permission) {
+        return true;
+      }
+
+      return self._apos.permissions.can(req, field.permission);
+    });
+
     // Allow alternate names for fields. Very useful when importing
     // from a previous schema. -Tom
     _.each(schema, function(field) {
