@@ -49,6 +49,8 @@ function AposSchemas() {
             _.each(hideFields, function(field){
               var $fieldset = self.findFieldset($el, field);
               $fieldset.addClass('apos-hidden');
+              var $helpText = $fieldset.next('p.apos-help');
+              $helpText.addClass('apos-hidden');
             });
           }
         });
@@ -59,8 +61,10 @@ function AposSchemas() {
           showFields = showFields.split(',');
 
           _.each(showFields, function(field){
+            var $helpText = $fieldset.next('p.apos-help');
             var $fieldset = self.findFieldset($el, field);
             $fieldset.removeClass('apos-hidden');
+            $helpText.removeClass('apos-hidden');
           });
         }
       }
@@ -217,6 +221,8 @@ function AposSchemas() {
       { content: items, options: options }, function(data) {
       var $editView = self.findSafe($fieldset, '[data-' + name + '-edit-view]');
       $editView.append(data);
+      // Make sure slideshows, videos, etc. get their JS
+      apos.enablePlayers($editView);
       return callback(null);
     });
   };
@@ -399,7 +405,7 @@ function AposSchemas() {
         }
       }
       data[name] = values;
-      if (field.required && !data[name]) {
+      if (field.required && (!data[name].length)) {
         return apos.afterYield(_.partial(callback, 'required'));
       }
       return apos.afterYield(callback);
