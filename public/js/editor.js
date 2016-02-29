@@ -61,8 +61,8 @@ function AposSchemas() {
           showFields = showFields.split(',');
 
           _.each(showFields, function(field){
-            var $helpText = $fieldset.next('p.apos-help');
             var $fieldset = self.findFieldset($el, field);
+            var $helpText = $fieldset.next('p.apos-help');
             $fieldset.removeClass('apos-hidden');
             $helpText.removeClass('apos-hidden');
           });
