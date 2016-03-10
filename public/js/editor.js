@@ -615,51 +615,8 @@ function AposSchemas() {
        $field.val(val);
       }
 
-      // afterChange shows and hides other fieldsets based on
-      // the current value of this field and its visibility.
-      // We do this in three situations: at startup, when the
-      // user changes the value, and when the visibility of this
-      // field has been affected by another field with the
-      // showFields option. This allows nested showFields to
-      // work properly. -Tom
-
-      afterChange();
-      $field.on('change', afterChange);
-      $fieldset.on('aposShowFields', afterChange);
-
+      self.enableShowFields(data, name, $field, $el, field);
       return apos.afterYield(callback);
-
-      function afterChange() {
-
-        // Implement showFields
-
-        if (!_.find(field.choices || [], function(choice) {
-          return choice.showFields;
-        })) {
-          // showFields is not in use for this select
-          return;
-        }
-
-        var val = $field.val();
-
-        _.each(field.choices || [], function(choice) {
-
-          // Show the fields for this value if it is the current value
-          // *and* the select field itself is currently visible
-
-          var show = (choice.value === val) && !$fieldset.hasClass('apos-hidden');
-
-          _.each(choice.showFields || [], function(fieldName) {
-            var $fieldset = self.findFieldset($el, fieldName);
-            $fieldset.toggleClass('apos-hidden', !show);
-            $fieldset.trigger('aposShowFields');
-            var $helpText = $fieldset.next('p.apos-help');
-            $helpText.toggleClass('apos-hidden', !show);
-          });
-
-        });
-
-      }
     },
 
     integer: function(data, name, $field, $el, field, callback) {
@@ -676,6 +633,8 @@ function AposSchemas() {
       } else {
         $field.val(data[name] ? '1' : '0');
       }
+
+      self.enableShowFields(data, name, $field, $el, field);
       return apos.afterYield(callback);
     },
     joinByOne: function(data, name, $field, $el, field, callback) {
@@ -905,6 +864,88 @@ function AposSchemas() {
       }
     });
     return def;
+  };
+
+  // Enable the showFields option for the choices associated
+  // with the given field (boolean or select)
+
+  self.enableShowFields = function(data, name, $field, $el, field) {
+
+    var $fieldset = self.findFieldset($el, name);
+
+    // afterChange shows and hides other fieldsets based on
+    // the current value of this field and its visibility.
+    // We do this in three situations: at startup, when the
+    // user changes the value, and when the visibility of this
+    // field has been affected by another field with the
+    // showFields option. This allows nested showFields to
+    // work properly. -Tom
+
+    afterChange();
+
+    $field.on('change', afterChange);
+    $fieldset.on('aposShowFields', afterChange);
+
+    function afterChange() {
+
+      // Implement showFields
+
+      if (!_.find(field.choices || [], function(choice) {
+        return choice.showFields;
+      })) {
+        // showFields is not in use for this select
+        return;
+      }
+
+      var val;
+      if (field.checkbox) {
+        val = $field.is(':checked');
+      } else {
+        val = $field.val();
+      }
+
+      _.each(field.choices || [], function(choice) {
+
+        // Show the fields for this value if it is the current value
+        // *and* the select field itself is currently visible
+
+        var show;
+
+        if ($fieldset.hasClass('apos-hidden')) {
+          show = false;
+        } else if (field.type === 'boolean') {
+          // Comparing boolean values is hard because
+          // the string '0' must be considered falsy in
+          // order to permit use of select elements. -Tom
+          if (val === choice.value) {
+            show = true;
+          } else if (!choice.value) {
+            if ((!val) || (val === '0')) {
+              show = true;
+            }
+          } else {
+            if (val && (val !== '0')) {
+              show = true;
+            }
+          }
+        } else {
+          // type select
+          if (val === choice.value) {
+            show = true;
+          }
+        }
+
+        _.each(choice.showFields || [], function(fieldName) {
+          var $fieldset = self.findFieldset($el, fieldName);
+          $fieldset.toggleClass('apos-hidden', !show);
+          $fieldset.trigger('aposShowFields');
+          var $helpText = $fieldset.next('p.apos-help');
+          $helpText.toggleClass('apos-hidden', !show);
+        });
+
+      });
+
+    }
   };
 }
 
