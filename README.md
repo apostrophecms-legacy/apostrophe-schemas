@@ -1044,3 +1044,5 @@ The `subsetInstance` method accepts a schema and an existing instance object and
 var profileSchema = schemas.subset(people.schema, [ 'title', 'body', 'thumbnail' ]);
 var profile = schemas.subsetInstance(person, profileSchema);
 ```
+
+
