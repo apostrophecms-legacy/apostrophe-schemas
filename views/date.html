@@ -1,6 +1,6 @@
 {%- include "schemaMacros.html" -%}
 {% if select %}
-  {{ formDateSelect(name, label, yearsBack, yearsForward) }}
+  {{ formDateSelect(name, label, yearsFrom, yearsTo) }}
 {% else %}
   {# jquery UI datepicker enhances this version #}
   {{ formText(name, label) }}

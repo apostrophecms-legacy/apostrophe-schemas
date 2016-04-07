@@ -105,7 +105,7 @@ The `integer` and `float` types also accept `min` and `max` options and automati
 
 The `select` type accepts a `choices` option which should contain an array of objects with `value` and `label` properties. In addition to `value` and `label`, each choice option can include a `showFields` option, which can be used to toggle visibility of other fields when being edited.
 
-The `date` type pops up a jQuery UI datepicker when clicked on, and the `time` type tolerates many different ways of entering the time, like "1pm" or "1:00pm" and "13:00".
+The `date` type pops up a jQuery UI datepicker when clicked on, and the `time` type tolerates many different ways of entering the time, like "1pm" or "1:00pm" and "13:00". For `date`, you can specify `select: true` to display dropdowns for year, month and day rather than a calendar control. When doing so you can also specify `yearsFrom` and `yearsTo` to give a range for the "year" dropdown. if these values are less than 1000 they are relative to the current year. You may even use an absolute year for `yearsFrom` and a relative year for `yearsTo`.
 
 The `url` field type is tolerant of mistakes like leaving off `http:`.
 
