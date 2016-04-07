@@ -904,6 +904,8 @@ function AposSchemas() {
         val = $field.val();
       }
 
+      var allShowFields = {};
+
       _.each(field.choices || [], function(choice) {
 
         // Show the fields for this value if it is the current value
@@ -936,13 +938,20 @@ function AposSchemas() {
         }
 
         _.each(choice.showFields || [], function(fieldName) {
-          var $fieldset = self.findFieldset($el, fieldName);
-          $fieldset.toggleClass('apos-hidden', !show);
-          $fieldset.trigger('aposShowFields');
-          var $helpText = $fieldset.next('p.apos-help');
-          $helpText.toggleClass('apos-hidden', !show);
+          if (!_.has(allShowFields, fieldName)) {
+            allShowFields[fieldName] = false;
+          }
+          allShowFields[fieldName] = allShowFields[fieldName] || show;
         });
 
+      });
+
+      _.each(allShowFields, function(val, key) {
+        var $fieldset = self.findFieldset($el, key);
+        $fieldset.toggleClass('apos-hidden', !val);
+        $fieldset.trigger('aposShowFields');
+        var $helpText = $fieldset.next('p.apos-help');
+        $helpText.toggleClass('apos-hidden', !val);
       });
 
     }
