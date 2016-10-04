@@ -1,3 +1,7 @@
+## Not for new projects
+
+This module is for Apostrophe 0.5.x only. In Apostrophe 2.x, schemas are standard equipment.
+
 # apostrophe-schemas
 
 **Table of Contents**
